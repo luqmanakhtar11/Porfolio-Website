@@ -11,8 +11,11 @@ export default function Root() {
   const { pathname } = useLocation();
 
   // The IraqPay case study provides its own sticky navigation bar,
-  // so the global portfolio navbar is hidden on that route.
-  const hideNav = pathname === '/work/amentum-onpoint' || pathname === '/work/iraq-pay' || pathname === '/resume' || pathname === '/work/cdm-cashpro';
+  // so the global portfolio navbar is hidden on that route. The admin
+  // dashboard is a standalone utility page and hides the whole portfolio
+  // chrome (nav, ticker, footer).
+  const isAdmin = pathname === '/admin';
+  const hideNav = isAdmin || pathname === '/work/amentum-onpoint' || pathname === '/work/iraq-pay' || pathname === '/resume' || pathname === '/work/cdm-cashpro';
 
   return (
     <div
@@ -30,7 +33,7 @@ export default function Root() {
       {!hideNav && <Ticker />}
       {!hideNav && <Nav dark={dark} onToggle={toggle} />}
       <Outlet />
-      <Footer />
+      {!isAdmin && <Footer />}
     </div>
   );
 }

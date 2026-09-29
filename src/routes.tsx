@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import CaseStudy from './pages/CaseStudy';
 import Resume from './pages/Resume';
 import CdmCashProCaseStudy from './pages/CdmCashProCaseStudy';
+import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -15,6 +16,7 @@ export const router = createBrowserRouter([
       { path: 'work/:slug', Component: CaseStudy },
       { path: 'resume', Component: Resume },
       { path: 'work/cdm-cashpro', Component: CdmCashProCaseStudy },
+      { path: 'admin', Component: Admin },
       { path: '*', Component: NotFound },
     ],
   },

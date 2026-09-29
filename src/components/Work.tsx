@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
-import { projects, type Category, type Project } from "../data/projects"
+import type { Category, Project } from "../data/projects"
 import { useInView } from "../hooks/useInView"
+import { useProjects } from "../hooks/useProjects"
 import ProjectGalleryModal, { preloadGallery } from "./ProjectGalleryModal"
 
 const CATS: Category[] = [
@@ -18,7 +19,7 @@ function ProjectCard({
   index,
   onOpenGallery,
 }: {
-  p: typeof projects[0]
+  p: Project
   index: number
   onOpenGallery: (p: Project) => void
 }) {
@@ -116,6 +117,7 @@ export default function Work() {
   const [active, setActive] = useState<Category>("All")
   const [galleryProject, setGalleryProject] = useState<Project | null>(null)
   const { ref, inView } = useInView(0.08)
+  const { projects, loading } = useProjects()
 
   const filtered = projects.filter(
     (p) => active === "All" || p.categories.includes(active),
@@ -211,10 +213,26 @@ export default function Work() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
           style={{ columnGap: "28px", rowGap: "48px" }}
         >
-          {filtered.map((p, i) => (
+          {loading && (
+            <div
+              className="col-span-full"
+              style={{
+                padding: "80px 0",
+                textAlign: "center",
+                color: "var(--muted)",
+                fontFamily: "var(--f-mono)",
+                fontSize: "13px",
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+              }}
+            >
+              Loading projects…
+            </div>
+          )}
+          {!loading && filtered.map((p, i) => (
             <ProjectCard key={p.id} p={p} index={i} onOpenGallery={setGalleryProject} />
           ))}
-          {filtered.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div
               className="col-span-full"
               style={{

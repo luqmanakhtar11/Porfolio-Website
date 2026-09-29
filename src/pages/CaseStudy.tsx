@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router';
-import { projects } from '../data/projects';
 import IraqPayCaseStudy from './IraqPayCaseStudy';
 import CdmCashProCaseStudy from './CdmCashProCaseStudy';
+import { useProjects } from '../hooks/useProjects';
 
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -119,6 +119,7 @@ function MetricCard({ num, label, index }: { num: string; label: string; index: 
 export default function CaseStudy() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { projects, loading } = useProjects();
   const project = projects.find(p => p.slug === slug);
   const cs = project?.caseStudy;
 
@@ -132,6 +133,14 @@ export default function CaseStudy() {
   }
   if (slug === 'cdm-cashpro') {
     return <CdmCashProCaseStudy />;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--bg)' }}>
+        <p style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>Loading…</p>
+      </div>
+    );
   }
 
   if (!project || !cs) {
