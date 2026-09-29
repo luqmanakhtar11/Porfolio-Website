@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background -->
+  <rect width="32" height="32" rx="8" fill="#B5712A"/>
+  <!-- Stylised "LA" monogram -->
+  <!-- L -->
+  <path d="M6 8 L6 24 L13 24" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- A -->
+  <path d="M16 24 L21 8 L26 24 M18.5 18 L23.5 18" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

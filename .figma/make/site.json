@@ -1,0 +1,12 @@
+{
+  "title": "Luqmn Akhtar",
+  "description": "Showcases a senior multidisciplinary designer's premium portfolio with interactive case studies and refined UX to impress recruiters and secure job opportunities.",
+  "language": "en",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

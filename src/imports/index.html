@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="TaifPay mobile wallet UI/UX case study." />
+  <title>TaifPay — Mobile Wallet UX Case Study</title>
+  <style>
+    :root {
+      --ink: #07142d;
+      --ink-2: #14213d;
+      --blue: #1769ff;
+      --blue-2: #0b4cd6;
+      --sky: #dceaff;
+      --ice: #f4f7fc;
+      --paper: #fbfcff;
+      --line: #d9e1ee;
+      --muted: #65718a;
+      --mint: #00a98f;
+      --plum: #6d3fd1;
+      --coral: #f05f54;
+      --radius: 26px;
+      --shadow: 0 28px 70px rgba(7, 20, 45, .13);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(23,105,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(23,105,255,.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+      z-index: -1;
+    }
+    a { color: inherit; }
+    button { font: inherit; }
+    img { max-width: 100%; display: block; }
+    :focus-visible { outline: 3px solid #8db8ff; outline-offset: 4px; }
+
+    .progress { position: fixed; inset: 0 0 auto; height: 4px; z-index: 99; background: rgba(23,105,255,.12); }
+    .progress > span { display: block; height: 100%; width: 0; background: var(--blue); }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 14px; color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .display { font-family: "Arial Narrow", "Roboto Condensed", Inter, sans-serif; font-stretch: condensed; letter-spacing: -.055em; line-height: .94; }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(251,252,255,.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(217,225,238,.8);
+    }
+    .nav-inner { height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; color: white; background: var(--blue); border-radius: 11px 11px 11px 3px; box-shadow: 0 8px 20px rgba(23,105,255,.25); }
+    .nav-links { display: flex; gap: 28px; font-size: 13px; font-weight: 700; color: #3b4862; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--blue); }
+    .nav-tag { border: 1px solid var(--line); border-radius: 999px; padding: 7px 11px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+    .hero { min-height: 820px; position: relative; display: grid; align-items: center; padding: 86px 0 92px; overflow: hidden; }
+    .hero-grid { display: grid; grid-template-columns: .95fr 1.05fr; align-items: center; gap: 56px; }
+    .hero h1 { max-width: 650px; margin: 0 0 26px; font-size: clamp(64px, 8vw, 118px); }
+    .hero h1 span { color: var(--blue); }
+    .hero-copy { max-width: 620px; font-size: 19px; color: #4c5870; }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 34px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; padding: 0 19px; border-radius: 14px; border: 1px solid var(--line); background: white; color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 850; box-shadow: 0 8px 22px rgba(7,20,45,.06); }
+    .button.primary { color: white; background: var(--blue); border-color: var(--blue); }
+    .hero-note { margin-top: 26px; display: flex; gap: 18px; align-items: center; font-size: 12px; color: var(--muted); }
+    .hero-note::before { content: ""; width: 42px; height: 1px; background: var(--blue); }
+
+    .hero-stage { position: relative; height: 620px; }
+    .rail { position: absolute; inset: 52px 4px 44px 30px; border: 2px solid rgba(23,105,255,.16); border-radius: 100px 24px 100px 24px; transform: rotate(-7deg); }
+    .rail::before { content: ""; position: absolute; width: 11px; height: 11px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 8px rgba(23,105,255,.13); animation: orbit 8s linear infinite; offset-path: inset(0 round 100px 24px 100px 24px); }
+    @keyframes orbit { to { offset-distance: 100%; } }
+    .phone { position: absolute; width: 238px; padding: 10px; border-radius: 38px; background: #0b1221; box-shadow: 0 38px 90px rgba(7,20,45,.24); transition: transform .45s cubic-bezier(.2,.75,.2,1); }
+    .phone:hover { transform: translateY(-10px) rotate(0deg) !important; }
+    .phone::before { content: ""; position: absolute; z-index: 3; top: 17px; left: 50%; width: 70px; height: 20px; transform: translateX(-50%); background: #0b1221; border-radius: 20px; }
+    .phone-screen { min-height: 496px; position: relative; overflow: hidden; border-radius: 29px; background: white; }
+    .phone-a { left: 12px; top: 82px; transform: rotate(-8deg); z-index: 2; }
+    .phone-b { right: 14px; top: 25px; transform: rotate(7deg); z-index: 1; }
+    .phone-c { left: 205px; bottom: 2px; transform: rotate(2deg); z-index: 3; }
+    .app-bar { height: 43px; display: flex; align-items: center; justify-content: space-between; padding: 15px 15px 0; color: #1a263d; font-size: 8px; font-weight: 800; }
+    .app-content { padding: 17px 15px; }
+    .app-kicker { color: var(--muted); font-size: 9px; }
+    .app-title { margin: 3px 0 13px; font-size: 18px; font-weight: 900; letter-spacing: -.04em; }
+    .balance-card { min-height: 120px; padding: 17px; color: white; border-radius: 18px; background: linear-gradient(145deg, #091c48, #123d91); box-shadow: 0 14px 30px rgba(13,44,106,.22); }
+    .balance-card small { opacity: .7; font-size: 8px; }
+    .balance { margin: 7px 0 13px; font-size: 23px; font-weight: 900; letter-spacing: -.04em; }
+    .balance-actions { display: flex; gap: 7px; }
+    .mini-pill { padding: 6px 9px; border-radius: 999px; background: rgba(255,255,255,.15); font-size: 7px; font-weight: 800; }
+    .quick-actions { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 14px 0; }
+    .quick { padding: 10px 4px; text-align: center; border: 1px solid #e6ebf4; border-radius: 12px; font-size: 7px; color: #3b4862; }
+    .quick i { width: 25px; height: 25px; display: grid; place-items: center; margin: 0 auto 6px; border-radius: 9px; color: var(--blue); background: var(--sky); font-style: normal; font-weight: 900; }
+    .activity-title { margin: 16px 0 8px; font-size: 10px; font-weight: 900; }
+    .activity { display: flex; align-items: center; gap: 9px; padding: 9px 0; border-bottom: 1px solid #edf0f5; }
+    .activity-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 9px; background: #ecf3ff; color: var(--blue); font-size: 9px; font-weight: 900; }
+    .activity-text { flex: 1; font-size: 8px; font-weight: 750; }
+    .activity-text small { display: block; margin-top: 2px; color: var(--muted); font-size: 6px; font-weight: 600; }
+    .amount { font-size: 8px; font-weight: 900; }
+    .scan-head { padding: 34px 18px 18px; text-align: center; background: linear-gradient(180deg, #f4f8ff, white); }
+    .scan-head h3 { margin: 8px 0 4px; font-size: 18px; }
+    .scan-head p { margin: 0; color: var(--muted); font-size: 8px; }
+    .qr { width: 166px; aspect-ratio: 1; margin: 18px auto; padding: 15px; border-radius: 20px; background: white; border: 1px solid #e3eaf5; box-shadow: 0 16px 35px rgba(7,20,45,.1); }
+    .qr svg { width: 100%; height: 100%; }
+    .scan-line { width: 74%; height: 3px; margin: -104px auto 100px; border-radius: 5px; background: var(--blue); box-shadow: 0 0 12px rgba(23,105,255,.75); animation: scan 2.7s ease-in-out infinite; }
+    @keyframes scan { 50% { transform: translateY(54px); } }
+    .phone-cta { display: block; margin: 18px 15px 0; padding: 12px; border-radius: 12px; color: white; background: var(--blue); text-align: center; font-size: 9px; font-weight: 900; }
+    .steps { display: flex; gap: 5px; margin: 8px 0 18px; }
+    .steps span { height: 4px; flex: 1; border-radius: 8px; background: #dce5f2; }
+    .steps span.active { background: var(--blue); }
+    .field { margin: 10px 0; padding: 11px 12px; border: 1px solid #dfe6f1; border-radius: 12px; color: #7b879b; font-size: 8px; }
+    .field strong { display: block; margin-bottom: 3px; color: #202c42; font-size: 7px; }
+    .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 18px; }
+    .choice { padding: 12px 8px; border: 1px solid #dfe6f1; border-radius: 12px; text-align: center; font-size: 7px; font-weight: 800; }
+    .choice.active { color: var(--blue); background: #edf4ff; border-color: var(--blue); }
+
+    .stats { position: relative; z-index: 5; margin-top: -36px; }
+    .stats-grid { display: grid; grid-template-columns: 1.25fr repeat(3, 1fr); color: white; background: var(--ink); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+    .stat { min-height: 142px; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid rgba(255,255,255,.12); }
+    .stat:last-child { border: 0; }
+    .stat-label { color: #9fb0ce; font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
+    .stat strong { font-size: 28px; line-height: 1.05; letter-spacing: -.04em; }
+    .stat:first-child strong { color: #9bc0ff; }
+
+    section { padding: 112px 0; }
+    .section-head { display: grid; grid-template-columns: .75fr 1.25fr; gap: 60px; align-items: end; margin-bottom: 56px; }
+    .section-head h2 { margin: 0; font-size: clamp(48px, 6vw, 82px); }
+    .section-head p { max-width: 570px; margin: 0; color: var(--muted); font-size: 18px; }
+    .challenge-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 34px; }
+    .problem-card { min-height: 460px; padding: 46px; position: relative; overflow: hidden; color: white; background: var(--blue); border-radius: var(--radius); }
+    .problem-card h3 { max-width: 650px; margin: 0; font-size: clamp(38px,5vw,65px); }
+    .problem-card p { max-width: 570px; margin: 26px 0 0; color: #d7e6ff; font-size: 17px; }
+    .problem-card::after { content: ""; position: absolute; width: 260px; height: 260px; right: -90px; bottom: -90px; border: 42px solid rgba(255,255,255,.12); border-radius: 50%; }
+    .principles { display: grid; gap: 14px; }
+    .principle { min-height: 138px; padding: 24px 26px; display: grid; grid-template-columns: 46px 1fr; gap: 18px; align-items: start; background: white; border: 1px solid var(--line); border-radius: 20px; }
+    .principle .num { width: 42px; height: 42px; display: grid; place-items: center; color: var(--blue); background: var(--sky); border-radius: 12px; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 900; }
+    .principle h4 { margin: 1px 0 6px; font-size: 17px; }
+    .principle p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .ecosystem { background: var(--ice); }
+    .role-rail { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; background: white; }
+    .role { min-height: 230px; padding: 25px 18px; position: relative; border-right: 1px solid var(--line); }
+    .role:last-child { border: 0; }
+    .role i { display: block; width: 11px; height: 11px; margin-bottom: 65px; border-radius: 50%; background: var(--role); box-shadow: 0 0 0 7px color-mix(in srgb, var(--role) 15%, transparent); }
+    .role h3 { margin: 0 0 7px; font-size: 18px; }
+    .role p { margin: 0; color: var(--muted); font-size: 12px; }
+    .role::after { content: ""; position: absolute; left: 23px; right: -23px; top: 30px; height: 1px; background: var(--line); z-index: 0; }
+    .role:last-child::after { display: none; }
+
+    .process-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
+    .process-step { padding: 28px 25px; border-top: 3px solid var(--blue); background: white; box-shadow: 0 16px 40px rgba(7,20,45,.06); }
+    .process-step small { font-family: ui-monospace, monospace; color: var(--blue); font-weight: 900; }
+    .process-step h3 { margin: 36px 0 10px; font-size: 20px; }
+    .process-step p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .flows { color: white; background: var(--ink); }
+    .flows .section-head p { color: #9aa9c4; }
+    .flows .eyebrow { color: #74a6ff; }
+    .flow-tabs { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 22px; }
+    .flow-tab { padding: 10px 15px; color: #b9c6dc; background: transparent; border: 1px solid #2b3b59; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 800; }
+    .flow-tab.active { color: var(--ink); background: white; border-color: white; }
+    .flow-frame { position: relative; min-height: 520px; padding: 18px; background: #111a2c; border: 1px solid #283651; border-radius: 24px; overflow: hidden; }
+    .flow-frame img { width: 100%; height: 100%; max-height: 610px; object-fit: contain; border-radius: 14px; cursor: zoom-in; }
+    .flow-caption { display: flex; justify-content: space-between; gap: 24px; align-items: center; margin-top: 18px; color: #93a4c0; font-size: 12px; }
+    .flow-caption strong { color: white; }
+    .flow-panel { display: none; }
+    .flow-panel.active { display: block; animation: fade .35s ease-out; }
+    @keyframes fade { from { opacity: 0; transform: translateY(5px); } }
+
+    .decisions { background: white; }
+    .decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .decision { min-height: 500px; padding: 30px; position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 25px; background: var(--paper); }
+    .decision h3 { max-width: 270px; margin: 0 0 12px; font-size: 25px; letter-spacing: -.035em; }
+    .decision > p { margin: 0; color: var(--muted); font-size: 13px; }
+    .decision-visual { position: absolute; inset: auto 0 0; min-height: 275px; display: grid; place-items: center; background: linear-gradient(180deg, transparent, #edf4ff); }
+    .mini-phone { width: 165px; padding: 7px; border-radius: 28px 28px 0 0; background: #0b1221; box-shadow: 0 25px 50px rgba(7,20,45,.18); transform: translateY(20px); }
+    .mini-screen { min-height: 300px; padding: 30px 12px 12px; border-radius: 21px 21px 0 0; background: white; }
+    .mini-screen h4 { margin: 0 0 14px; font-size: 12px; }
+    .state-row { display: flex; gap: 7px; margin: 9px 0; }
+    .state-row span { flex: 1; height: 48px; border-radius: 9px; border: 1px solid #e0e7f2; background: #f7f9fc; }
+    .state-row span.selected { background: #eaf2ff; border-color: var(--blue); }
+    .verify-line { height: 8px; margin: 9px 0; border-radius: 4px; background: #e7ecf4; }
+    .verify-line.short { width: 62%; }
+    .verify-box { margin: 16px 0; padding: 12px; border-radius: 10px; background: #f1f6ff; font-size: 7px; color: #49617f; }
+    .error-box { margin-top: 22px; padding: 12px; border: 1px solid #ffd0cc; border-radius: 11px; background: #fff2f0; color: #9b372f; font-size: 8px; }
+    .success-ring { width: 80px; height: 80px; margin: 25px auto 16px; display: grid; place-items: center; border-radius: 50%; color: var(--mint); border: 8px solid #d9f6ef; font-size: 28px; font-weight: 900; }
+
+    .system-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .system-card { padding: 34px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+    .system-card h3 { margin: 0 0 22px; font-size: 20px; }
+    .swatches { display: grid; grid-template-columns: repeat(5,1fr); gap: 9px; }
+    .swatch { aspect-ratio: .75; padding: 12px 8px; display: flex; align-items: end; border-radius: 13px; color: white; font-size: 8px; font-weight: 800; }
+    .type-sample { padding: 16px 0; display: flex; justify-content: space-between; gap: 24px; align-items: baseline; border-bottom: 1px solid var(--line); }
+    .type-sample:last-child { border: 0; }
+    .type-sample strong { font-size: 28px; letter-spacing: -.045em; }
+    .type-sample span { color: var(--muted); font-size: 11px; }
+    .system-wide { grid-column: 1 / -1; display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; }
+    .state-palette { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    .state-chip { padding: 18px; border-radius: 15px; font-size: 12px; font-weight: 800; background: var(--chip-bg); color: var(--chip-fg); }
+
+    .outcome { padding-top: 70px; }
+    .outcome-card { padding: 64px; position: relative; overflow: hidden; color: white; background: linear-gradient(135deg, var(--blue), #0a43bd); border-radius: 32px; }
+    .outcome-card h2 { max-width: 790px; margin: 0; font-size: clamp(48px, 7vw, 90px); }
+    .outcome-card > p { max-width: 650px; margin: 28px 0 42px; color: #dbe8ff; font-size: 18px; }
+    .outcome-list { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; position: relative; z-index: 2; }
+    .outcome-item { min-height: 145px; padding: 23px; border: 1px solid rgba(255,255,255,.2); border-radius: 18px; background: rgba(255,255,255,.08); backdrop-filter: blur(10px); }
+    .outcome-item strong { display: block; margin-bottom: 12px; font-size: 16px; }
+    .outcome-item span { color: #d9e6ff; font-size: 12px; }
+    .outcome-card::after { content: ""; position: absolute; width: 440px; height: 440px; top: -210px; right: -150px; border: 70px solid rgba(255,255,255,.09); border-radius: 50%; }
+
+    footer { padding: 42px 0 60px; color: var(--muted); font-size: 12px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+
+    .lightbox { position: fixed; inset: 0; z-index: 100; display: none; place-items: center; padding: 30px; background: rgba(4,10,24,.92); backdrop-filter: blur(12px); }
+    .lightbox.open { display: grid; }
+    .lightbox img { max-width: 94vw; max-height: 88vh; border-radius: 14px; box-shadow: 0 30px 100px rgba(0,0,0,.4); }
+    .lightbox button { position: absolute; top: 22px; right: 25px; width: 42px; height: 42px; color: white; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 50%; cursor: pointer; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 980px) {
+      .hero-grid, .section-head, .challenge-grid, .system-grid, .system-wide { grid-template-columns: 1fr; }
+      .hero { padding-top: 58px; }
+      .hero-stage { height: 570px; max-width: 620px; width: 100%; margin-inline: auto; }
+      .phone { width: 215px; }
+      .phone-screen { min-height: 450px; }
+      .phone-c { left: 34%; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .role-rail { grid-template-columns: repeat(2,1fr); }
+      .role { border-bottom: 1px solid var(--line); }
+      .role:last-child { grid-column: 1 / -1; }
+      .process-grid, .decision-grid { grid-template-columns: repeat(2,1fr); }
+      .decision:last-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 680px) {
+      .wrap { width: min(100% - 24px, 1180px); }
+      .nav-links { display: none; }
+      .hero { min-height: auto; }
+      .hero h1 { font-size: 64px; }
+      .hero-copy { font-size: 16px; }
+      .hero-stage { height: 490px; margin-top: 20px; transform: scale(.88); transform-origin: top center; }
+      .phone { width: 188px; }
+      .phone-screen { min-height: 395px; }
+      .phone-a { left: -8px; }
+      .phone-b { right: -5px; }
+      .phone-c { display: none; }
+      .stats { margin-top: -76px; }
+      .stats-grid, .process-grid, .decision-grid, .outcome-list { grid-template-columns: 1fr; }
+      .stat { min-height: 112px; }
+      .role-rail { grid-template-columns: 1fr; }
+      .role, .role:last-child { grid-column: auto; }
+      .section-head { gap: 22px; }
+      section { padding: 80px 0; }
+      .problem-card, .outcome-card { padding: 34px 25px; }
+      .decision:last-child { grid-column: auto; }
+      .system-wide { display: block; }
+      .state-palette { grid-template-columns: repeat(2,1fr); margin-top: 26px; }
+      .swatches { grid-template-columns: repeat(3,1fr); }
+      .flow-frame { min-height: 300px; padding: 8px; }
+      .flow-caption, .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"><span></span></div>
+  <nav aria-label="Case study navigation">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top"><span class="brand-mark">T</span> TaifPay</a>
+      <div class="nav-links">
+        <a href="#challenge">Challenge</a><a href="#flows">Flows</a><a href="#decisions">Decisions</a><a href="#system">System</a>
+      </div>
+      <span class="nav-tag">UX case study</span>
+    </div>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow">Mobile finance · Product design</p>
+          <h1 class="display">One wallet.<br><span>Many lives.</span></h1>
+          <p class="hero-copy">Designing a secure, role-aware mobile wallet that guides individuals and businesses through onboarding, money movement, QR payments, and everyday account management.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#flows">Explore the flows <span aria-hidden="true">↓</span></a>
+            <a class="button" href="#decisions">See design decisions</a>
+          </div>
+          <div class="hero-note">Case study reconstructed from the completed TaifPay Figma system</div>
+        </div>
+
+        <div class="hero-stage" aria-label="Three representative TaifPay mobile screens">
+          <div class="rail" aria-hidden="true"></div>
+          <article class="phone phone-a" aria-label="Wallet home screen mockup">
+            <div class="phone-screen">
+              <div class="app-bar"><span>9:41</span><span>● ◔ ▰</span></div>
+              <div class="app-content">
+                <div class="app-kicker">Welcome back, Ahmed</div>
+                <div class="app-title">Your wallet</div>
+                <div class="balance-card"><small>Available balance</small><div class="balance">1,250,000 <small>IQD</small></div><div class="balance-actions"><span class="mini-pill">Add money</span><span class="mini-pill">Details</span></div></div>
+                <div class="quick-actions"><div class="quick"><i>↑</i>Send</div><div class="quick"><i>↓</i>Request</div><div class="quick"><i>⌗</i>Scan</div></div>
+                <div class="activity-title">Recent activity</div>
+                <div class="activity"><span class="activity-icon">M</span><div class="activity-text">Market purchase<small>Today · 11:42</small></div><span class="amount">− 28,500</span></div>
+                <div class="activity"><span class="activity-icon">S</span><div class="activity-text">Salary received<small>Yesterday</small></div><span class="amount" style="color:var(--mint)">+ 850,000</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="phone phone-b" aria-label="QR payment screen mockup">
+            <div class="phone-screen">
+              <div class="app-bar"><span>9:41</span><span>● ◔ ▰</span></div>
+              <div class="scan-head"><span class="app-kicker">Pay instantly</span><h3>Scan QR code</h3><p>Align the code inside the frame</p></div>
+              <div class="qr" aria-hidden="true">
+                <svg viewBox="0 0 120 120" fill="none"><rect width="120" height="120" rx="8" fill="#fff"/><g fill="#07142D"><path d="M5 5h34v34H5zM81 5h34v34H81zM5 81h34v34H5z"/><path d="M48 5h9v9h-9zM64 5h9v18h-9zM48 22h9v9h-9zM44 42h13v9H44zM64 33h9v18h-9zM78 48h9v9h-9zM92 46h23v10H92zM45 61h10v22H45zM62 60h9v9h-9zM77 66h10v20H77zM92 64h9v9h-9zM106 63h9v23h-9zM46 93h9v22h-9zM61 87h10v10H61zM75 94h13v9H75zM94 91h9v24h-9zM107 96h8v9h-8z"/></g><g fill="#fff"><rect x="13" y="13" width="18" height="18" rx="2"/><rect x="89" y="13" width="18" height="18" rx="2"/><rect x="13" y="89" width="18" height="18" rx="2"/></g><g fill="#1769ff"><rect x="18" y="18" width="8" height="8"/><rect x="94" y="18" width="8" height="8"/><rect x="18" y="94" width="8" height="8"/></g></svg>
+              </div>
+              <div class="scan-line"></div>
+              <span class="phone-cta">Upload from gallery</span>
+            </div>
+          </article>
+
+          <article class="phone phone-c" aria-label="Business wallet setup screen mockup">
+            <div class="phone-screen">
+              <div class="app-bar"><span>9:41</span><span>● ◔ ▰</span></div>
+              <div class="app-content">
+                <div class="app-kicker">Business wallet</div><div class="app-title">Tell us about your work</div>
+                <div class="steps"><span class="active"></span><span class="active"></span><span></span></div>
+                <div class="field"><strong>Business name</strong>Al Noor Trading</div>
+                <div class="field"><strong>Registration number</strong>Enter number</div>
+                <div class="choice-grid"><div class="choice active">Merchant</div><div class="choice">Company</div></div>
+                <span class="phone-cta" style="margin:0">Continue</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap stats reveal">
+      <div class="stats-grid">
+        <div class="stat"><span class="stat-label">Design objective</span><strong>Trust at every transaction</strong></div>
+        <div class="stat"><span class="stat-label">Prototype depth</span><strong>499</strong><span>documented transitions</span></div>
+        <div class="stat"><span class="stat-label">Account contexts</span><strong>5</strong><span>personal to enterprise</span></div>
+        <div class="stat"><span class="stat-label">Platform</span><strong>Mobile</strong><span>iOS-first system</span></div>
+      </div>
+    </div>
+
+    <section id="challenge">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">The challenge</p><h2 class="display">Complex money flows, without the complexity.</h2></div>
+          <p>TaifPay serves people with very different financial needs. The design had to make identity, wallet type, permissions, transfers, and recovery feel like one coherent product—not a collection of separate forms.</p>
+        </div>
+        <div class="challenge-grid">
+          <article class="problem-card reveal">
+            <p class="eyebrow" style="color:#cfe0ff">Design question</p>
+            <h3 class="display">How might a financial app feel simple while still being explicit about risk, identity, and account responsibility?</h3>
+            <p>The answer was not to hide complexity. It was to reveal only the right decision, at the right moment, with clear states before and after money moves.</p>
+          </article>
+          <div class="principles">
+            <article class="principle reveal"><span class="num">01</span><div><h4>Orient before asking</h4><p>Explain why information is needed before requesting identity, permissions, or business documents.</p></div></article>
+            <article class="principle reveal"><span class="num">02</span><div><h4>Progress over paperwork</h4><p>Split long setup journeys into short, visible steps with recoverable progress.</p></div></article>
+            <article class="principle reveal"><span class="num">03</span><div><h4>Make status unmistakable</h4><p>Use consistent language and visual feedback for pending, successful, blocked, and failed actions.</p></div></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ecosystem">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Product architecture</p><h2 class="display">A role-aware wallet ecosystem.</h2></div>
+          <p>The core interaction model stays familiar while requirements adapt to the responsibility of each account—from fast personal access to document-heavy company setup.</p>
+        </div>
+        <div class="role-rail reveal">
+          <article class="role" style="--role:#1769ff"><i></i><h3>Personal</h3><p>Everyday payments, transfers, history, and profile controls.</p></article>
+          <article class="role" style="--role:#6d3fd1"><i></i><h3>Small merchant</h3><p>A lighter path for accepting payments and managing a small business.</p></article>
+          <article class="role" style="--role:#c54077"><i></i><h3>Merchant</h3><p>Expanded verification, transaction controls, and business details.</p></article>
+          <article class="role" style="--role:#00a98f"><i></i><h3>Agent</h3><p>Operational onboarding with location and service information.</p></article>
+          <article class="role" style="--role:#b26918"><i></i><h3>Company</h3><p>Structured registration, ownership, and authorization requirements.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Design approach</p><h2 class="display">From journeys to a reusable system.</h2></div>
+          <p>The completed file shows a process centered on coverage: map the journey, design the happy path, define exceptions, and package patterns for handoff.</p>
+        </div>
+        <div class="process-grid">
+          <article class="process-step reveal"><small>01 / Map</small><h3>Trace user intent</h3><p>Organize screens by user goal rather than by isolated feature.</p></article>
+          <article class="process-step reveal"><small>02 / Reduce</small><h3>Stage information</h3><p>Group questions into clear steps and postpone secondary decisions.</p></article>
+          <article class="process-step reveal"><small>03 / Stress-test</small><h3>Design the edges</h3><p>Include errors, permission denial, loading, empty, and recovery states.</p></article>
+          <article class="process-step reveal"><small>04 / Systemize</small><h3>Prepare for scale</h3><p>Reuse controls and patterns across every wallet context.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="flows" id="flows">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Flow evidence</p><h2 class="display">The system behind the screens.</h2></div>
+          <p>These maps are taken directly from the shared Figma file. They show the breadth of the product and how primary journeys, edge cases, and wallet-specific requirements were documented together.</p>
+        </div>
+        <div class="flow-tabs" role="tablist" aria-label="Figma flow maps">
+          <button class="flow-tab active" role="tab" aria-selected="true" data-flow="auth">Access & identity</button>
+          <button class="flow-tab" role="tab" aria-selected="false" data-flow="payments">Payments & onboarding</button>
+          <button class="flow-tab" role="tab" aria-selected="false" data-flow="wallets">Wallet operations</button>
+        </div>
+        <div class="flow-panel active" data-panel="auth">
+          <div class="flow-frame reveal"><img src="assets/auth-map.webp" alt="Figma map of TaifPay splash, login, account type, error, permission, and signup flows" data-lightbox /></div>
+          <div class="flow-caption"><strong>Access & identity</strong><span>Splash · first-time login · passcode recovery · signup · account types · permissions · error library</span></div>
+        </div>
+        <div class="flow-panel" data-panel="payments">
+          <div class="flow-frame"><img src="assets/payments-map.webp" alt="Figma map of TaifPay foreign customer onboarding, QR, loading, and small merchant flows" data-lightbox /></div>
+          <div class="flow-caption"><strong>Payments & onboarding</strong><span>Foreign customer onboarding · QR · loading behavior · small merchant setup</span></div>
+        </div>
+        <div class="flow-panel" data-panel="wallets">
+          <div class="flow-frame"><img src="assets/wallets-map.webp" alt="Figma map of TaifPay agent, company, existing user, and transaction history flows" data-lightbox /></div>
+          <div class="flow-caption"><strong>Wallet operations</strong><span>Agent wallet · company wallet · existing users · transaction history</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="decisions" id="decisions">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Key decisions</p><h2 class="display">Confidence is a design feature.</h2></div>
+          <p>Financial UX succeeds when users can predict what happens next. Three patterns do most of that work in TaifPay: contextual setup, progressive verification, and explicit transaction states.</p>
+        </div>
+        <div class="decision-grid">
+          <article class="decision reveal"><h3>Choose the wallet before completing the paperwork.</h3><p>Up-front account context prevents users from entering a generic flow only to discover different requirements later.</p><div class="decision-visual"><div class="mini-phone"><div class="mini-screen"><h4>Select wallet type</h4><div class="state-row"><span class="selected"></span><span></span></div><div class="state-row"><span></span><span></span></div><span class="phone-cta" style="margin:18px 0 0">Continue</span></div></div></div></article>
+          <article class="decision reveal"><h3>Break verification into visible, recoverable steps.</h3><p>Step indicators and focused forms make a long compliance journey feel finite and easier to resume.</p><div class="decision-visual"><div class="mini-phone"><div class="mini-screen"><h4>Verify your business</h4><div class="steps"><span class="active"></span><span class="active"></span><span></span></div><div class="verify-line"></div><div class="verify-line"></div><div class="verify-line short"></div><div class="verify-box">Documents are encrypted and used only for verification.</div><span class="phone-cta" style="margin:0">Save & continue</span></div></div></div></article>
+          <article class="decision reveal"><h3>Treat every state as part of the transaction.</h3><p>Success, errors, delays, and permission blocks explain what happened and offer a useful next action.</p><div class="decision-visual"><div class="mini-phone"><div class="mini-screen"><h4>Transfer status</h4><div class="success-ring">✓</div><div class="verify-line"></div><div class="verify-line short" style="margin-inline:auto"></div><div class="error-box">If a transfer fails, the next step is shown in the same context.</div></div></div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="system">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div><p class="eyebrow">Visual system</p><h2 class="display">A calm interface for high-stakes actions.</h2></div>
+          <p>Cobalt signals action and progress. Dark navy carries balances and financial weight. Secondary account colors distinguish contexts without changing how the product behaves.</p>
+        </div>
+        <div class="system-grid">
+          <article class="system-card reveal"><h3>Core palette</h3><div class="swatches"><div class="swatch" style="background:#1769ff">Action<br>#1769FF</div><div class="swatch" style="background:#07142d">Trust<br>#07142D</div><div class="swatch" style="background:#00a98f">Success<br>#00A98F</div><div class="swatch" style="background:#6d3fd1">Business<br>#6D3FD1</div><div class="swatch" style="background:#f05f54">Attention<br>#F05F54</div></div></article>
+          <article class="system-card reveal"><h3>Type hierarchy</h3><div class="type-sample"><strong>Wallet total</strong><span>Display · 28 / Bold</span></div><div class="type-sample"><strong style="font-size:18px">Review transfer</strong><span>Title · 18 / Bold</span></div><div class="type-sample"><strong style="font-size:13px">Recipient details</strong><span>Label · 13 / Medium</span></div></article>
+          <article class="system-card system-wide reveal"><div><h3>State language</h3><p style="color:var(--muted);margin:0">Every color has a job: confirm, warn, block, or inform. Copy remains direct and action-oriented.</p></div><div class="state-palette"><div class="state-chip" style="--chip-bg:#e8f8f4;--chip-fg:#087b69">Completed</div><div class="state-chip" style="--chip-bg:#fff5dc;--chip-fg:#966100">Pending</div><div class="state-chip" style="--chip-bg:#fff0ee;--chip-fg:#9d3b32">Needs action</div><div class="state-chip" style="--chip-bg:#eaf2ff;--chip-fg:#0b4cd6">In progress</div></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="outcome">
+      <div class="wrap">
+        <article class="outcome-card reveal">
+          <p class="eyebrow" style="color:#d6e5ff">Design outcome</p>
+          <h2 class="display">A complete product language—not just a set of screens.</h2>
+          <p>The resulting system supports access, onboarding, identity, multiple wallet types, QR payments, transfers, history, settings, permissions, and failure states within one consistent interaction model.</p>
+          <div class="outcome-list">
+            <div class="outcome-item"><strong>Broad flow coverage</strong><span>Happy paths and exceptions live together, making gaps visible before development.</span></div>
+            <div class="outcome-item"><strong>Reusable interaction patterns</strong><span>Forms, verification, status, and navigation patterns repeat across account contexts.</span></div>
+            <div class="outcome-item"><strong>Handoff clarity</strong><span>Flow sections marked ready for development provide a shared reference for implementation.</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap footer-inner"><span>TaifPay mobile wallet · UI/UX case study</span><span>Built from the supplied Figma flows. No unverified performance metrics are claimed.</span></div></footer>
+
+  <div class="lightbox" role="dialog" aria-modal="true" aria-label="Expanded Figma flow map"><button aria-label="Close image">×</button><img alt="" /></div>
+
+  <script>
+    const progress = document.querySelector('.progress span');
+    const updateProgress = () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      progress.style.width = `${max ? (scrollY / max) * 100 : 0}%`;
+    };
+    addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    const tabs = document.querySelectorAll('.flow-tab');
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      document.querySelectorAll('.flow-panel').forEach(panel => panel.classList.remove('active'));
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      document.querySelector(`[data-panel="${tab.dataset.flow}"]`).classList.add('active');
+    }));
+
+    const lightbox = document.querySelector('.lightbox');
+    const lightboxImage = lightbox.querySelector('img');
+    document.querySelectorAll('[data-lightbox]').forEach(image => image.addEventListener('click', () => {
+      lightboxImage.src = image.src;
+      lightboxImage.alt = image.alt;
+      lightbox.classList.add('open');
+      lightbox.querySelector('button').focus();
+    }));
+    const closeLightbox = () => lightbox.classList.remove('open');
+    lightbox.querySelector('button').addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', event => { if (event.target === lightbox) closeLightbox(); });
+    addEventListener('keydown', event => { if (event.key === 'Escape') closeLightbox(); });
+  </script>
+</body>
+</html>
