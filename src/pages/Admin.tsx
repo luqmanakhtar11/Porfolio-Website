@@ -281,13 +281,11 @@ function ProjectEditor({
   const [draft, setDraft] = useState<Project>(initial);
   const [toolsText, setToolsText] = useState(initial.tools.join(', '));
   const [tagsText, setTagsText] = useState((initial.tags ?? []).join(', '));
-  const [showAdvanced, setShowAdvanced] = useState(
-    Boolean(
-      initial.subtitle || initial.description || initial.role || initial.duration ||
-      initial.featured || initial.wide || initial.galleryView || initial.caseStudy
-    )
+  const [galleryImages, setGalleryImages] = useState<{ src: string; caption: string }[]>(
+    initial.caseStudy?.finalImages && initial.caseStudy.finalImages.length > 0
+      ? initial.caseStudy.finalImages
+      : []
   );
-  const [showCaseStudy, setShowCaseStudy] = useState(Boolean(initial.caseStudy));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -303,10 +301,6 @@ function ProjectEditor({
       if (d.categories.length >= MAX_CATEGORIES) return d;
       return { ...d, categories: [...d.categories, c] };
     });
-  }
-
-  function setCS<K extends keyof CaseStudyData>(key: K, value: CaseStudyData[K]) {
-    setDraft((d) => ({ ...d, caseStudy: { ...(d.caseStudy ?? emptyCaseStudy()), [key]: value } }));
   }
 
   async function handleSave(e: FormEvent) {
@@ -345,13 +339,20 @@ function ProjectEditor({
       .filter(Boolean)
       .slice(0, MAX_TAGS);
 
+    const cleanGalleryImages = galleryImages.filter((img) => img.src.trim());
+
     const payload: Project = {
       ...draft,
       slug,
       id: slug,
       tools,
       tags,
-      caseStudy: showCaseStudy ? draft.caseStudy ?? emptyCaseStudy() : undefined,
+      // Every project opens as a simple image gallery, not a full case-study page.
+      galleryView: true,
+      caseStudy: {
+        ...emptyCaseStudy(),
+        finalImages: cleanGalleryImages,
+      },
     };
 
     setSaving(true);
@@ -368,8 +369,6 @@ function ProjectEditor({
       setSaving(false);
     }
   }
-
-  const cs = draft.caseStudy;
 
   return (
     <form onSubmit={handleSave} style={{ maxWidth: '640px' }}>
@@ -436,239 +435,38 @@ function ProjectEditor({
 
       <ImageField label="Cover image (shown in the homepage grid)" value={draft.image} onChange={(v) => set('image', v)} />
 
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '18px', marginTop: '4px', marginBottom: '18px' }}>
-        <button
-          type="button"
-          onClick={() => setShowAdvanced((v) => !v)}
-          style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
-        >
-          {showAdvanced ? '▾ Hide advanced options' : '▸ Show advanced options (subtitle, description, year, case study…)'}
-        </button>
-      </div>
-
-      {showAdvanced && (
-        <>
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Subtitle</label>
-            <input style={inputStyle} value={draft.subtitle} onChange={(e) => set('subtitle', e.target.value)} placeholder="e.g. Branding · Identity Design" />
-          </div>
-
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Description</label>
-            <textarea
-              style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
-              value={draft.description}
-              onChange={(e) => set('description', e.target.value)}
-            />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={fieldWrap}>
-              <label style={labelStyle}>Role</label>
-              <input style={inputStyle} value={draft.role} onChange={(e) => set('role', e.target.value)} />
-            </div>
-            <div style={fieldWrap}>
-              <label style={labelStyle}>Year</label>
-              <input style={inputStyle} value={draft.year} onChange={(e) => set('year', e.target.value)} />
-            </div>
-            <div style={fieldWrap}>
-              <label style={labelStyle}>Duration</label>
-              <input style={inputStyle} value={draft.duration} onChange={(e) => set('duration', e.target.value)} placeholder="e.g. 6 weeks" />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={fieldWrap}>
-              <label style={labelStyle}>Card background color</label>
-              <input type="text" style={inputStyle} value={draft.imageBg} onChange={(e) => set('imageBg', e.target.value)} placeholder="#111111" />
-            </div>
-            <div style={fieldWrap}>
-              <label style={labelStyle}>Accent color</label>
-              <input type="text" style={inputStyle} value={draft.accent ?? ''} onChange={(e) => set('accent', e.target.value)} placeholder="#5B5BF0" />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '18px', flexWrap: 'wrap' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
-              <input type="checkbox" checked={Boolean(draft.featured)} onChange={(e) => set('featured', e.target.checked)} />
-              Featured
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
-              <input type="checkbox" checked={Boolean(draft.wide)} onChange={(e) => set('wide', e.target.checked)} />
-              Wide card
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
-              <input type="checkbox" checked={Boolean(draft.galleryView)} onChange={(e) => set('galleryView', e.target.checked)} />
-              Opens as an image gallery popup (instead of a case-study page)
-            </label>
-          </div>
-
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '18px', marginBottom: '18px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--fg)', fontFamily: 'var(--f-sans)', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={showCaseStudy}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setShowCaseStudy(checked);
-                  if (checked && !draft.caseStudy) {
-                    setDraft((d) => ({ ...d, caseStudy: emptyCaseStudy() }));
-                  }
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Gallery images (shown when someone clicks this project)</label>
+        {galleryImages.map((img, i) => (
+          <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <ImageField
+                label={`Image ${i + 1}`}
+                value={img.src}
+                onChange={(url) => {
+                  const next = [...galleryImages];
+                  next[i] = { ...next[i], src: url };
+                  setGalleryImages(next);
                 }}
               />
-              Add case-study details (challenge / approach / outcome page)
-            </label>
-          </div>
-        </>
-      )}
-
-      {showAdvanced && showCaseStudy && cs && (
-        <div style={{ padding: '18px', borderRadius: '12px', background: 'var(--surface2, rgba(0,0,0,0.02))', marginBottom: '18px' }}>
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Challenge</label>
-            <textarea style={{ ...inputStyle, minHeight: '70px' }} value={cs.challenge} onChange={(e) => setCS('challenge', e.target.value)} />
-          </div>
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Approach</label>
-            <textarea style={{ ...inputStyle, minHeight: '70px' }} value={cs.approach} onChange={(e) => setCS('approach', e.target.value)} />
-          </div>
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Outcome</label>
-            <textarea style={{ ...inputStyle, minHeight: '70px' }} value={cs.outcome} onChange={(e) => setCS('outcome', e.target.value)} />
-          </div>
-
-          {/* Metrics */}
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Metrics (shown as stat tiles)</label>
-            {(cs.metrics ?? []).map((m, i) => (
-              <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                <input
-                  style={{ ...inputStyle, width: '90px' }}
-                  placeholder="38%"
-                  value={m.num}
-                  onChange={(e) => {
-                    const next = [...(cs.metrics ?? [])];
-                    next[i] = { ...next[i], num: e.target.value };
-                    setCS('metrics', next);
-                  }}
-                />
-                <input
-                  style={inputStyle}
-                  placeholder="Faster task completion"
-                  value={m.label}
-                  onChange={(e) => {
-                    const next = [...(cs.metrics ?? [])];
-                    next[i] = { ...next[i], label: e.target.value };
-                    setCS('metrics', next);
-                  }}
-                />
-                <button
-                  type="button"
-                  style={{ ...btnDanger, flexShrink: 0 }}
-                  onClick={() => setCS('metrics', (cs.metrics ?? []).filter((_, idx) => idx !== i))}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+            </div>
             <button
               type="button"
-              style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
-              onClick={() => setCS('metrics', [...(cs.metrics ?? []), { num: '', label: '' }])}
+              style={{ ...btnDanger, flexShrink: 0 }}
+              onClick={() => setGalleryImages(galleryImages.filter((_, idx) => idx !== i))}
             >
-              + Add metric
+              ✕
             </button>
           </div>
-
-          {/* Process images */}
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Process images (the story of how you got there)</label>
-            {cs.processImages.map((img, i) => (
-              <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1 }}>
-                  <ImageField
-                    label={`Image ${i + 1}`}
-                    value={img.src}
-                    onChange={(url) => {
-                      const next = [...cs.processImages];
-                      next[i] = { ...next[i], src: url };
-                      setCS('processImages', next);
-                    }}
-                  />
-                  <input
-                    style={{ ...inputStyle, marginTop: '-8px' }}
-                    placeholder="Caption"
-                    value={img.caption}
-                    onChange={(e) => {
-                      const next = [...cs.processImages];
-                      next[i] = { ...next[i], caption: e.target.value };
-                      setCS('processImages', next);
-                    }}
-                  />
-                </div>
-                <button
-                  type="button"
-                  style={{ ...btnDanger, flexShrink: 0 }}
-                  onClick={() => setCS('processImages', cs.processImages.filter((_, idx) => idx !== i))}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
-              onClick={() => setCS('processImages', [...cs.processImages, { src: '', caption: '' }])}
-            >
-              + Add process image
-            </button>
-          </div>
-
-          {/* Final images */}
-          <div style={fieldWrap}>
-            <label style={labelStyle}>Final images (the finished result)</label>
-            {cs.finalImages.map((img, i) => (
-              <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1 }}>
-                  <ImageField
-                    label={`Image ${i + 1}`}
-                    value={img.src}
-                    onChange={(url) => {
-                      const next = [...cs.finalImages];
-                      next[i] = { ...next[i], src: url };
-                      setCS('finalImages', next);
-                    }}
-                  />
-                  <input
-                    style={{ ...inputStyle, marginTop: '-8px' }}
-                    placeholder="Caption"
-                    value={img.caption}
-                    onChange={(e) => {
-                      const next = [...cs.finalImages];
-                      next[i] = { ...next[i], caption: e.target.value };
-                      setCS('finalImages', next);
-                    }}
-                  />
-                </div>
-                <button
-                  type="button"
-                  style={{ ...btnDanger, flexShrink: 0 }}
-                  onClick={() => setCS('finalImages', cs.finalImages.filter((_, idx) => idx !== i))}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
-              onClick={() => setCS('finalImages', [...cs.finalImages, { src: '', caption: '' }])}
-            >
-              + Add final image
-            </button>
-          </div>
-        </div>
-      )}
+        ))}
+        <button
+          type="button"
+          style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
+          onClick={() => setGalleryImages([...galleryImages, { src: '', caption: '' }])}
+        >
+          + Add gallery image
+        </button>
+      </div>
 
       {error && <p style={{ color: '#dc2626', fontSize: '13px', marginBottom: '16px' }}>{error}</p>}
 
