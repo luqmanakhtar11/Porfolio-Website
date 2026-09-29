@@ -111,7 +111,7 @@ export default function Resume() {
             ← Portfolio
           </Link>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 32 }}>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8">
             {/* Name + title */}
             <div>
               <h1 style={{ fontFamily: 'var(--f-serif)', fontSize: 'clamp(40px,6vw,64px)', fontWeight: 400, margin: '0 0 10px', lineHeight: 1.05, letterSpacing: '-0.02em' }}>
@@ -121,8 +121,8 @@ export default function Resume() {
             </div>
 
             {/* Contact + CTAs */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end', minWidth: 200 }}>
-              <div style={{ fontSize: 13, opacity: 0.7, textAlign: 'right', lineHeight: 1.8 }}>
+            <div className="flex flex-col items-start md:items-end gap-2.5 md:min-w-[200px]">
+              <div className="text-left md:text-right" style={{ fontSize: 13, opacity: 0.7, lineHeight: 1.8 }}>
                 <div>Islamabad, Pakistan</div>
                 <div>+92 316 9113272</div>
                 <div>luqmanakhtar3@gmail.com</div>
