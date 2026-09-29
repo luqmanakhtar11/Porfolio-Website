@@ -113,7 +113,6 @@ export default function Nav({ dark, onToggle }: NavProps) {
               border: atHero ? '1px solid rgba(247,246,241,0.12)' : '1px solid var(--border)',
               color: fgColor,
               cursor: 'pointer',
-              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
