@@ -7,12 +7,11 @@ import ProjectGalleryModal, { preloadGallery } from "./ProjectGalleryModal"
 
 const CATS: Category[] = [
   "All",
-  "UI/UX",
-  "Product Design",
-  "Graphic Design",
-  "Branding",
-  "Web Design",
+  "UI/UX & Product Design",
+  "Graphics & Marketing",
 ]
+
+const PAGE_SIZE = 6
 
 function ProjectCard({
   p,
@@ -69,7 +68,7 @@ function ProjectCard({
               textTransform: "uppercase",
             }}
           >
-            {p.categories[0]}
+            {p.subCategory || p.categories[0]}
           </span>
           <span
             style={{
@@ -115,6 +114,7 @@ function ProjectCard({
 
 export default function Work() {
   const [active, setActive] = useState<Category>("All")
+  const [page, setPage] = useState(1)
   const [galleryProject, setGalleryProject] = useState<Project | null>(null)
   const { ref, inView } = useInView(0.08)
   const { projects, loading } = useProjects()
@@ -122,6 +122,15 @@ export default function Work() {
   const filtered = projects.filter(
     (p) => active === "All" || p.categories.includes(active),
   )
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
+  function selectCategory(c: Category) {
+    setActive(c)
+    setPage(1)
+  }
 
   return (
     <>
@@ -185,7 +194,7 @@ export default function Work() {
             {CATS.map((c) => (
               <button
                 key={c}
-                onClick={() => setActive(c)}
+                onClick={() => selectCategory(c)}
                 style={{
                   padding: "6px 16px",
                   borderRadius: "100px",
@@ -229,7 +238,7 @@ export default function Work() {
               Loading projects…
             </div>
           )}
-          {!loading && filtered.map((p, i) => (
+          {!loading && paged.map((p, i) => (
             <ProjectCard key={p.id} p={p} index={i} onOpenGallery={setGalleryProject} />
           ))}
           {!loading && filtered.length === 0 && (
@@ -246,6 +255,73 @@ export default function Work() {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {!loading && pageCount > 1 && (
+          <div
+            className="flex items-center justify-center gap-2"
+            style={{ marginTop: "56px" }}
+          >
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "100px",
+                fontSize: "12px",
+                fontWeight: 600,
+                fontFamily: "var(--f-mono)",
+                letterSpacing: "0.05em",
+                background: "transparent",
+                color: currentPage === 1 ? "var(--border)" : "var(--muted)",
+                border: "1px solid var(--border)",
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              }}
+            >
+              ← Prev
+            </button>
+
+            {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+              <button
+                key={n}
+                onClick={() => setPage(n)}
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "100px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  fontFamily: "var(--f-mono)",
+                  background: n === currentPage ? "var(--fg)" : "transparent",
+                  color: n === currentPage ? "var(--bg)" : "var(--muted)",
+                  border: `1px solid ${n === currentPage ? "var(--fg)" : "var(--border)"}`,
+                  cursor: "pointer",
+                }}
+              >
+                {n}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+              disabled={currentPage === pageCount}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "100px",
+                fontSize: "12px",
+                fontWeight: 600,
+                fontFamily: "var(--f-mono)",
+                letterSpacing: "0.05em",
+                background: "transparent",
+                color: currentPage === pageCount ? "var(--border)" : "var(--muted)",
+                border: "1px solid var(--border)",
+                cursor: currentPage === pageCount ? "not-allowed" : "pointer",
+              }}
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
     </section>
     {galleryProject && (

@@ -115,7 +115,8 @@ async function authHeader(): Promise<string> {
 // app already uses, so nothing downstream (Work.tsx, CaseStudy.tsx,
 // ProjectGalleryModal.tsx) needs to change its type imports.
 
-export type { Category, Project, CaseStudyData } from '../data/projects';
+export type { Category, Project, CaseStudyData, GraphicsSubcategory } from '../data/projects';
+export { GRAPHICS_SUBCATEGORIES } from '../data/projects';
 import type { Category, Project, CaseStudyData } from '../data/projects';
 
 /** Everything Project has, plus an optional hint for where it sorts in the grid. */
@@ -142,6 +143,7 @@ interface ProjectRow {
   case_study: CaseStudyData | null;
   sort_order: number;
   tags: string[] | null;
+  sub_category: string | null;
 }
 
 function rowToProject(row: ProjectRow): Project {
@@ -164,6 +166,7 @@ function rowToProject(row: ProjectRow): Project {
     galleryView: row.gallery_view,
     caseStudy: row.case_study ?? undefined,
     tags: row.tags ?? [],
+    subCategory: row.sub_category ?? undefined,
   };
 }
 
@@ -187,6 +190,7 @@ function projectToRow(p: ProjectDraft) {
   if (p.caseStudy !== undefined) row.case_study = p.caseStudy;
   if (p.sortOrder !== undefined) row.sort_order = p.sortOrder;
   if (p.tags !== undefined) row.tags = p.tags;
+  if (p.subCategory !== undefined) row.sub_category = p.subCategory;
   return row;
 }
 

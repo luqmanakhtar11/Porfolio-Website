@@ -9,13 +9,14 @@ import {
   updateProject,
   deleteProject,
   uploadImage,
+  GRAPHICS_SUBCATEGORIES,
   type Category,
   type Project,
   type CaseStudyData,
 } from '../lib/supabaseClient';
 import { useProjects } from '../hooks/useProjects';
 
-const ALL_CATEGORIES: Category[] = ['UI/UX', 'Product Design', 'Graphic Design', 'Branding', 'Web Design'];
+const TOP_CATEGORIES: Category[] = ['UI/UX & Product Design', 'Graphics & Marketing'];
 
 function slugify(s: string): string {
   return s
@@ -38,7 +39,6 @@ function emptyCaseStudy(): CaseStudyData {
   };
 }
 
-const MAX_CATEGORIES = 3;
 const MAX_TAGS = 10;
 
 function emptyDraft(): Project {
@@ -293,14 +293,13 @@ function ProjectEditor({
     setDraft((d) => ({ ...d, [key]: value }));
   }
 
-  function toggleCategory(c: Category) {
-    setDraft((d) => {
-      if (d.categories.includes(c)) {
-        return { ...d, categories: d.categories.filter((x) => x !== c) };
-      }
-      if (d.categories.length >= MAX_CATEGORIES) return d;
-      return { ...d, categories: [...d.categories, c] };
-    });
+  function chooseCategory(c: Category) {
+    setDraft((d) => ({
+      ...d,
+      categories: [c],
+      // Switching away from Graphics & Marketing clears any sub-category pick.
+      subCategory: c === 'Graphics & Marketing' ? d.subCategory : undefined,
+    }));
   }
 
   async function handleSave(e: FormEvent) {
@@ -312,7 +311,11 @@ function ProjectEditor({
       return;
     }
     if (draft.categories.length === 0) {
-      setError('Pick at least one category.');
+      setError('Pick a category.');
+      return;
+    }
+    if (draft.categories[0] === 'Graphics & Marketing' && !draft.subCategory) {
+      setError('Pick a sub-category for Graphics & Marketing.');
       return;
     }
     let slug = draft.slug;
@@ -393,17 +396,15 @@ function ProjectEditor({
       </div>
 
       <div style={fieldWrap}>
-        <label style={labelStyle}>Category (required, limit {MAX_CATEGORIES})</label>
+        <label style={labelStyle}>Category (required)</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {ALL_CATEGORIES.map((c) => {
-            const selected = draft.categories.includes(c);
-            const disabled = !selected && draft.categories.length >= MAX_CATEGORIES;
+          {TOP_CATEGORIES.map((c) => {
+            const selected = draft.categories[0] === c;
             return (
               <button
                 type="button"
                 key={c}
-                onClick={() => toggleCategory(c)}
-                disabled={disabled}
+                onClick={() => chooseCategory(c)}
                 style={{
                   padding: '6px 14px',
                   borderRadius: '999px',
@@ -411,9 +412,8 @@ function ProjectEditor({
                   fontFamily: 'var(--f-sans)',
                   border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
                   background: selected ? 'var(--accent)' : 'transparent',
-                  color: selected ? '#fff' : disabled ? 'var(--muted)' : 'var(--fg)',
-                  cursor: disabled ? 'not-allowed' : 'pointer',
-                  opacity: disabled ? 0.5 : 1,
+                  color: selected ? '#fff' : 'var(--fg)',
+                  cursor: 'pointer',
                 }}
               >
                 {c}
@@ -421,6 +421,36 @@ function ProjectEditor({
             );
           })}
         </div>
+
+        {draft.categories[0] === 'Graphics & Marketing' && (
+          <div style={{ marginTop: '14px' }}>
+            <label style={labelStyle}>Sub-category (required)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {GRAPHICS_SUBCATEGORIES.map((sc) => {
+                const selected = draft.subCategory === sc;
+                return (
+                  <button
+                    type="button"
+                    key={sc}
+                    onClick={() => set('subCategory', sc)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '999px',
+                      fontSize: '13px',
+                      fontFamily: 'var(--f-sans)',
+                      border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
+                      background: selected ? 'var(--accent)' : 'transparent',
+                      color: selected ? '#fff' : 'var(--fg)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {sc}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={fieldWrap}>

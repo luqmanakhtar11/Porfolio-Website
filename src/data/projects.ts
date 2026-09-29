@@ -1,4 +1,17 @@
-export type Category = 'All' | 'UI/UX' | 'Product Design' | 'Graphic Design' | 'Branding' | 'Web Design';
+export type Category = 'All' | 'UI/UX & Product Design' | 'Graphics & Marketing';
+
+/** Sub-categories available only when a project's category is "Graphics & Marketing". */
+export const GRAPHICS_SUBCATEGORIES = [
+  'Social Media Design',
+  'Branding & Identity',
+  'Pamphlets & Flyers',
+  'Product Images & Packaging',
+  'Thumbnail Design',
+  'Posters & Banners',
+  'Print & Marketing Collateral',
+  'Presentation Design',
+] as const;
+export type GraphicsSubcategory = (typeof GRAPHICS_SUBCATEGORIES)[number];
 
 export interface CaseStudyData {
   challenge: string;
@@ -32,6 +45,8 @@ export interface Project {
   caseStudy?: CaseStudyData;
   /** Optional discovery keywords (not shown on cards; for future search/filtering use). */
   tags?: string[];
+  /** Only meaningful when categories includes "Graphics & Marketing". */
+  subCategory?: GraphicsSubcategory | string;
 }
 
 export const projects: Project[] = [
@@ -43,7 +58,7 @@ export const projects: Project[] = [
     description:
       'Redesigned a complex enterprise platform used by thousands of field engineers, reducing task completion time by 38% through streamlined information architecture and a new design system.',
     role: 'Lead UI/UX Designer',
-    categories: ['UI/UX', 'Product Design'],
+    categories: ['UI/UX & Product Design'],
     year: '2026',
     duration: '8 months',
     tools: ['Figma'],
@@ -116,7 +131,7 @@ export const projects: Project[] = [
     description:
       'A zero-to-launch product design for a banking platform. Designed the full product experience from discovery to high-fidelity screens and an interactive prototype.',
     role: 'UI/UX Designer',
-    categories: ['UI/UX', 'Product Design'],
+    categories: ['UI/UX & Product Design'],
     year: '2026',
     duration: '5 months',
     tools: ['Figma', 'FigJam', 'Lottie', 'Maze'],
@@ -180,7 +195,7 @@ export const projects: Project[] = [
     description:
       'Conducted an in-depth interactive UX audit identifying 47 critical usability issues and delivering a prioritised redesign roadmap with annotated wireframes.',
     role: 'UX Researcher & Designer',
-    categories: ['UI/UX'],
+    categories: ['UI/UX & Product Design'],
     year: '2025',
     duration: '6 weeks',
     tools: ['Figma', 'Maze', 'Hotjar', 'Notion'],
@@ -240,7 +255,7 @@ export const projects: Project[] = [
     description:
       'Analysed the full e-commerce funnel for a leading UK retailer, uncovering friction points that contributed to a projected 22% uplift in conversion rate post-redesign.',
     role: 'UX Designer',
-    categories: ['UI/UX', 'Web Design'],
+    categories: ['UI/UX & Product Design'],
     year: '2025',
     duration: '4 weeks',
     tools: ['Figma', 'Hotjar', 'Google Analytics', 'Optimal Workshop'],
@@ -301,7 +316,7 @@ export const projects: Project[] = [
     description:
       'End-to-end product design for an AI-powered talent management platform — covering user flows, component library, and a comprehensive design system for scale.',
     role: 'UI/UX Designer',
-    categories: ['UI/UX', 'Product Design'],
+    categories: ['UI/UX & Product Design'],
     year: '2026',
     duration: '6 months',
     tools: ['Figma'],
@@ -365,7 +380,8 @@ export const projects: Project[] = [
     description:
       'Created cohesive visual identities across multiple brand projects — from logo design and typography systems to full brand guidelines and marketing collateral.',
     role: 'Brand Designer',
-    categories: ['Graphic Design', 'Branding'],
+    categories: ['Graphics & Marketing'],
+    subCategory: 'Branding & Identity',
     year: '2025',
     duration: 'Ongoing',
     tools: ['Illustrator', 'Photoshop'],
