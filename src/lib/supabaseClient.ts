@@ -141,6 +141,7 @@ interface ProjectRow {
   gallery_view: boolean;
   case_study: CaseStudyData | null;
   sort_order: number;
+  tags: string[] | null;
 }
 
 function rowToProject(row: ProjectRow): Project {
@@ -162,6 +163,7 @@ function rowToProject(row: ProjectRow): Project {
     accent: row.accent ?? undefined,
     galleryView: row.gallery_view,
     caseStudy: row.case_study ?? undefined,
+    tags: row.tags ?? [],
   };
 }
 
@@ -184,6 +186,7 @@ function projectToRow(p: ProjectDraft) {
   if (p.galleryView !== undefined) row.gallery_view = p.galleryView;
   if (p.caseStudy !== undefined) row.case_study = p.caseStudy;
   if (p.sortOrder !== undefined) row.sort_order = p.sortOrder;
+  if (p.tags !== undefined) row.tags = p.tags;
   return row;
 }
 

@@ -38,6 +38,9 @@ function emptyCaseStudy(): CaseStudyData {
   };
 }
 
+const MAX_CATEGORIES = 3;
+const MAX_TAGS = 10;
+
 function emptyDraft(): Project {
   return {
     id: '',
@@ -57,6 +60,7 @@ function emptyDraft(): Project {
     accent: '#5B5BF0',
     galleryView: false,
     caseStudy: undefined,
+    tags: [],
   };
 }
 
@@ -276,6 +280,13 @@ function ProjectEditor({
 }) {
   const [draft, setDraft] = useState<Project>(initial);
   const [toolsText, setToolsText] = useState(initial.tools.join(', '));
+  const [tagsText, setTagsText] = useState((initial.tags ?? []).join(', '));
+  const [showAdvanced, setShowAdvanced] = useState(
+    Boolean(
+      initial.subtitle || initial.description || initial.role || initial.duration ||
+      initial.featured || initial.wide || initial.galleryView || initial.caseStudy
+    )
+  );
   const [showCaseStudy, setShowCaseStudy] = useState(Boolean(initial.caseStudy));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -285,10 +296,13 @@ function ProjectEditor({
   }
 
   function toggleCategory(c: Category) {
-    setDraft((d) => ({
-      ...d,
-      categories: d.categories.includes(c) ? d.categories.filter((x) => x !== c) : [...d.categories, c],
-    }));
+    setDraft((d) => {
+      if (d.categories.includes(c)) {
+        return { ...d, categories: d.categories.filter((x) => x !== c) };
+      }
+      if (d.categories.length >= MAX_CATEGORIES) return d;
+      return { ...d, categories: [...d.categories, c] };
+    });
   }
 
   function setCS<K extends keyof CaseStudyData>(key: K, value: CaseStudyData[K]) {
@@ -301,6 +315,10 @@ function ProjectEditor({
 
     if (!draft.title.trim()) {
       setError('Title is required.');
+      return;
+    }
+    if (draft.categories.length === 0) {
+      setError('Pick at least one category.');
       return;
     }
     let slug = draft.slug;
@@ -321,11 +339,18 @@ function ProjectEditor({
       .map((t) => t.trim())
       .filter(Boolean);
 
+    const tags = tagsText
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .slice(0, MAX_TAGS);
+
     const payload: Project = {
       ...draft,
       slug,
       id: slug,
       tools,
+      tags,
       caseStudy: showCaseStudy ? draft.caseStudy ?? emptyCaseStudy() : undefined,
     };
 
@@ -349,8 +374,8 @@ function ProjectEditor({
   return (
     <form onSubmit={handleSave} style={{ maxWidth: '640px' }}>
       <div style={fieldWrap}>
-        <label style={labelStyle}>Title</label>
-        <input style={inputStyle} value={draft.title} onChange={(e) => set('title', e.target.value)} required />
+        <label style={labelStyle}>Title (required)</label>
+        <input style={inputStyle} value={draft.title} onChange={(e) => set('title', e.target.value)} placeholder="Give your project a title" required />
         {isNew && draft.title && (
           <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '6px' }}>
             URL: /work/{slugify(draft.title) || '…'}
@@ -359,109 +384,145 @@ function ProjectEditor({
       </div>
 
       <div style={fieldWrap}>
-        <label style={labelStyle}>Subtitle</label>
-        <input style={inputStyle} value={draft.subtitle} onChange={(e) => set('subtitle', e.target.value)} placeholder="e.g. Branding · Identity Design" />
-      </div>
-
-      <div style={fieldWrap}>
-        <label style={labelStyle}>Description</label>
-        <textarea
-          style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
-          value={draft.description}
-          onChange={(e) => set('description', e.target.value)}
+        <label style={labelStyle}>Tags (optional, up to {MAX_TAGS})</label>
+        <input
+          style={inputStyle}
+          value={tagsText}
+          onChange={(e) => setTagsText(e.target.value)}
+          placeholder="Add up to 10 keywords to help people discover your project"
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        <div style={fieldWrap}>
-          <label style={labelStyle}>Role</label>
-          <input style={inputStyle} value={draft.role} onChange={(e) => set('role', e.target.value)} />
-        </div>
-        <div style={fieldWrap}>
-          <label style={labelStyle}>Year</label>
-          <input style={inputStyle} value={draft.year} onChange={(e) => set('year', e.target.value)} />
-        </div>
-        <div style={fieldWrap}>
-          <label style={labelStyle}>Duration</label>
-          <input style={inputStyle} value={draft.duration} onChange={(e) => set('duration', e.target.value)} placeholder="e.g. 6 weeks" />
-        </div>
-        <div style={fieldWrap}>
-          <label style={labelStyle}>Tools (comma-separated)</label>
-          <input style={inputStyle} value={toolsText} onChange={(e) => setToolsText(e.target.value)} placeholder="Figma, Illustrator" />
+      <div style={fieldWrap}>
+        <label style={labelStyle}>Category (required, limit {MAX_CATEGORIES})</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {ALL_CATEGORIES.map((c) => {
+            const selected = draft.categories.includes(c);
+            const disabled = !selected && draft.categories.length >= MAX_CATEGORIES;
+            return (
+              <button
+                type="button"
+                key={c}
+                onClick={() => toggleCategory(c)}
+                disabled={disabled}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '999px',
+                  fontSize: '13px',
+                  fontFamily: 'var(--f-sans)',
+                  border: `1px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
+                  background: selected ? 'var(--accent)' : 'transparent',
+                  color: selected ? '#fff' : disabled ? 'var(--muted)' : 'var(--fg)',
+                  cursor: disabled ? 'not-allowed' : 'pointer',
+                  opacity: disabled ? 0.5 : 1,
+                }}
+              >
+                {c}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       <div style={fieldWrap}>
-        <label style={labelStyle}>Categories</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {ALL_CATEGORIES.map((c) => (
-            <button
-              type="button"
-              key={c}
-              onClick={() => toggleCategory(c)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '999px',
-                fontSize: '13px',
-                fontFamily: 'var(--f-sans)',
-                border: `1px solid ${draft.categories.includes(c) ? 'var(--accent)' : 'var(--border)'}`,
-                background: draft.categories.includes(c) ? 'var(--accent)' : 'transparent',
-                color: draft.categories.includes(c) ? '#fff' : 'var(--fg)',
-                cursor: 'pointer',
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        <label style={labelStyle}>Tools Used</label>
+        <input
+          style={inputStyle}
+          value={toolsText}
+          onChange={(e) => setToolsText(e.target.value)}
+          placeholder="What software, hardware, or materials did you use?"
+        />
       </div>
 
       <ImageField label="Cover image (shown in the homepage grid)" value={draft.image} onChange={(v) => set('image', v)} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        <div style={fieldWrap}>
-          <label style={labelStyle}>Card background color</label>
-          <input type="text" style={inputStyle} value={draft.imageBg} onChange={(e) => set('imageBg', e.target.value)} placeholder="#111111" />
-        </div>
-        <div style={fieldWrap}>
-          <label style={labelStyle}>Accent color</label>
-          <input type="text" style={inputStyle} value={draft.accent ?? ''} onChange={(e) => set('accent', e.target.value)} placeholder="#5B5BF0" />
-        </div>
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '18px', marginTop: '4px', marginBottom: '18px' }}>
+        <button
+          type="button"
+          onClick={() => setShowAdvanced((v) => !v)}
+          style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
+        >
+          {showAdvanced ? '▾ Hide advanced options' : '▸ Show advanced options (subtitle, description, year, case study…)'}
+        </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '18px', flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
-          <input type="checkbox" checked={Boolean(draft.featured)} onChange={(e) => set('featured', e.target.checked)} />
-          Featured
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
-          <input type="checkbox" checked={Boolean(draft.wide)} onChange={(e) => set('wide', e.target.checked)} />
-          Wide card
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
-          <input type="checkbox" checked={Boolean(draft.galleryView)} onChange={(e) => set('galleryView', e.target.checked)} />
-          Opens as an image gallery popup (instead of a case-study page)
-        </label>
-      </div>
+      {showAdvanced && (
+        <>
+          <div style={fieldWrap}>
+            <label style={labelStyle}>Subtitle</label>
+            <input style={inputStyle} value={draft.subtitle} onChange={(e) => set('subtitle', e.target.value)} placeholder="e.g. Branding · Identity Design" />
+          </div>
 
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '18px', marginBottom: '18px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--fg)', fontFamily: 'var(--f-sans)', cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={showCaseStudy}
-            onChange={(e) => {
-              const checked = e.target.checked;
-              setShowCaseStudy(checked);
-              if (checked && !draft.caseStudy) {
-                setDraft((d) => ({ ...d, caseStudy: emptyCaseStudy() }));
-              }
-            }}
-          />
-          Add case-study details (challenge / approach / outcome page)
-        </label>
-      </div>
+          <div style={fieldWrap}>
+            <label style={labelStyle}>Description</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
+              value={draft.description}
+              onChange={(e) => set('description', e.target.value)}
+            />
+          </div>
 
-      {showCaseStudy && cs && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Role</label>
+              <input style={inputStyle} value={draft.role} onChange={(e) => set('role', e.target.value)} />
+            </div>
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Year</label>
+              <input style={inputStyle} value={draft.year} onChange={(e) => set('year', e.target.value)} />
+            </div>
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Duration</label>
+              <input style={inputStyle} value={draft.duration} onChange={(e) => set('duration', e.target.value)} placeholder="e.g. 6 weeks" />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Card background color</label>
+              <input type="text" style={inputStyle} value={draft.imageBg} onChange={(e) => set('imageBg', e.target.value)} placeholder="#111111" />
+            </div>
+            <div style={fieldWrap}>
+              <label style={labelStyle}>Accent color</label>
+              <input type="text" style={inputStyle} value={draft.accent ?? ''} onChange={(e) => set('accent', e.target.value)} placeholder="#5B5BF0" />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '18px', flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
+              <input type="checkbox" checked={Boolean(draft.featured)} onChange={(e) => set('featured', e.target.checked)} />
+              Featured
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
+              <input type="checkbox" checked={Boolean(draft.wide)} onChange={(e) => set('wide', e.target.checked)} />
+              Wide card
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--f-sans)', color: 'var(--fg)' }}>
+              <input type="checkbox" checked={Boolean(draft.galleryView)} onChange={(e) => set('galleryView', e.target.checked)} />
+              Opens as an image gallery popup (instead of a case-study page)
+            </label>
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '18px', marginBottom: '18px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--fg)', fontFamily: 'var(--f-sans)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={showCaseStudy}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setShowCaseStudy(checked);
+                  if (checked && !draft.caseStudy) {
+                    setDraft((d) => ({ ...d, caseStudy: emptyCaseStudy() }));
+                  }
+                }}
+              />
+              Add case-study details (challenge / approach / outcome page)
+            </label>
+          </div>
+        </>
+      )}
+
+      {showAdvanced && showCaseStudy && cs && (
         <div style={{ padding: '18px', borderRadius: '12px', background: 'var(--surface2, rgba(0,0,0,0.02))', marginBottom: '18px' }}>
           <div style={fieldWrap}>
             <label style={labelStyle}>Challenge</label>

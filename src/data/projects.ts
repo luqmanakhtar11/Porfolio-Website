@@ -30,6 +30,8 @@ export interface Project {
   /** When true, clicking the card opens a fast, high-res image lightbox instead of navigating to a case-study page. */
   galleryView?: boolean;
   caseStudy?: CaseStudyData;
+  /** Optional discovery keywords (not shown on cards; for future search/filtering use). */
+  tags?: string[];
 }
 
 export const projects: Project[] = [
