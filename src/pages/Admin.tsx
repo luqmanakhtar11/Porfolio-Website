@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import {
   isSupabaseConfigured,
   isLoggedIn,
+  isIdleExpired,
+  touchActivity,
   signIn,
   signOut,
   createProject,
@@ -186,9 +188,10 @@ function ImageField({
 }
 
 /* ─── Login screen ─── */
-function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+function LoginForm({ onSuccess, notice }: { onSuccess: () => void; notice?: string | null }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -244,14 +247,54 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
         <div style={fieldWrap}>
           <label style={labelStyle}>Password</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={inputStyle}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ ...inputStyle, paddingRight: '44px' }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              title={showPassword ? 'Hide password' : 'Show password'}
+              style={{
+                position: 'absolute',
+                right: '6px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--muted)',
+                cursor: 'pointer',
+              }}
+            >
+              {showPassword ? (
+                /* eye-off */
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                /* eye */
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
+        {notice && (
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>{notice}</p>
+        )}
         {error && <p style={{ color: '#dc2626', fontSize: '13px', marginBottom: '16px' }}>{error}</p>}
         <button type="submit" disabled={busy} style={{ ...btnPrimary, width: '100%' }}>
           {busy ? 'Signing in…' : 'Sign in'}
@@ -291,6 +334,14 @@ function ProjectEditor({
 
   function set<K extends keyof Project>(key: K, value: Project[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
+  }
+
+  function moveGalleryImage(from: number, to: number) {
+    if (to < 0 || to >= galleryImages.length) return;
+    const next = [...galleryImages];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setGalleryImages(next);
   }
 
   function chooseCategory(c: Category) {
@@ -467,8 +518,35 @@ function ProjectEditor({
 
       <div style={fieldWrap}>
         <label style={labelStyle}>Gallery images (shown when someone clicks this project)</label>
+        {galleryImages.length > 1 && (
+          <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '10px' }}>
+            Use the ↑ ↓ arrows to change the order. Images appear in the gallery top to bottom, exactly as listed here.
+          </p>
+        )}
         {galleryImages.map((img, i) => (
           <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0, paddingTop: '22px' }}>
+              <button
+                type="button"
+                aria-label={`Move image ${i + 1} up`}
+                title="Move up"
+                disabled={i === 0}
+                onClick={() => moveGalleryImage(i, i - 1)}
+                style={{ ...btnGhost, padding: '4px 10px', fontSize: '14px', opacity: i === 0 ? 0.35 : 1, cursor: i === 0 ? 'not-allowed' : 'pointer' }}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                aria-label={`Move image ${i + 1} down`}
+                title="Move down"
+                disabled={i === galleryImages.length - 1}
+                onClick={() => moveGalleryImage(i, i + 1)}
+                style={{ ...btnGhost, padding: '4px 10px', fontSize: '14px', opacity: i === galleryImages.length - 1 ? 0.35 : 1, cursor: i === galleryImages.length - 1 ? 'not-allowed' : 'pointer' }}
+              >
+                ↓
+              </button>
+            </div>
             <div style={{ flex: 1 }}>
               <ImageField
                 label={`Image ${i + 1}`}
@@ -513,15 +591,66 @@ function ProjectEditor({
 }
 
 /* ─── Main admin page ─── */
+const IDLE_MESSAGE = 'You were signed out after 10 minutes of inactivity. Please sign in again.';
+
 export default function Admin() {
-  const [authed, setAuthed] = useState(isLoggedIn());
+  // Declared before `authed` on purpose: isLoggedIn() clears an idle-expired
+  // session, so we need to detect the expiry first to show the notice.
+  const [sessionNotice, setSessionNotice] = useState<string | null>(() => (isIdleExpired() ? IDLE_MESSAGE : null));
+  const [authed, setAuthed] = useState(() => isLoggedIn());
   const { projects, loading, refresh } = useProjects();
   const [editing, setEditing] = useState<Project | 'new' | null>(null);
   const [deletingSlug, setDeletingSlug] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Project | null>(null);
+  const [deleteText, setDeleteText] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = 'Admin — Portfolio';
   }, []);
+
+  // Auto sign-out after IDLE_TIMEOUT_MS without any activity.
+  useEffect(() => {
+    if (!authed) return;
+    touchActivity();
+
+    let lastWrite = Date.now();
+    const onActivity = () => {
+      const now = Date.now();
+      if (now - lastWrite > 5000) {
+        lastWrite = now;
+        touchActivity();
+      }
+    };
+    const checkIdle = () => {
+      if (isIdleExpired()) {
+        signOut();
+        setSessionNotice(IDLE_MESSAGE);
+        setAuthed(false);
+      }
+    };
+
+    const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'] as const;
+    events.forEach((ev) => window.addEventListener(ev, onActivity, { passive: true }));
+    document.addEventListener('visibilitychange', checkIdle);
+    const timer = window.setInterval(checkIdle, 15_000);
+
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, onActivity));
+      document.removeEventListener('visibilitychange', checkIdle);
+      window.clearInterval(timer);
+    };
+  }, [authed]);
+
+  // Esc closes the delete dialog.
+  useEffect(() => {
+    if (!pendingDelete) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !deletingSlug) setPendingDelete(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [pendingDelete, deletingSlug]);
 
   if (!isSupabaseConfigured()) {
     return (
@@ -538,17 +667,35 @@ export default function Admin() {
   }
 
   if (!authed) {
-    return <LoginForm onSuccess={() => setAuthed(true)} />;
+    return (
+      <LoginForm
+        notice={sessionNotice}
+        onSuccess={() => {
+          setSessionNotice(null);
+          setAuthed(true);
+        }}
+      />
+    );
   }
 
-  async function handleDelete(slug: string) {
-    if (!confirm('Delete this project? This cannot be undone.')) return;
+  const deleteConfirmed = deleteText.trim().toUpperCase() === 'DELETE';
+
+  async function confirmDelete() {
+    if (!pendingDelete || !deleteConfirmed) return;
+    const slug = pendingDelete.slug;
     setDeletingSlug(slug);
+    setDeleteError(null);
     try {
       await deleteProject(slug);
+      setPendingDelete(null);
+      setDeleteText('');
       refresh();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Could not delete.');
+      setDeleteError(e instanceof Error ? e.message : 'Could not delete.');
+      if (!isLoggedIn()) {
+        setSessionNotice(IDLE_MESSAGE);
+        setAuthed(false);
+      }
     } finally {
       setDeletingSlug(null);
     }
@@ -628,7 +775,11 @@ export default function Admin() {
                   </button>
                   <button
                     style={btnDanger}
-                    onClick={() => handleDelete(p.slug)}
+                    onClick={() => {
+                      setPendingDelete(p);
+                      setDeleteText('');
+                      setDeleteError(null);
+                    }}
                     disabled={deletingSlug === p.slug}
                   >
                     {deletingSlug === p.slug ? 'Deleting…' : 'Delete'}
@@ -642,6 +793,84 @@ export default function Admin() {
           </>
         )}
       </div>
+
+      {pendingDelete && (
+        <div
+          onClick={() => {
+            if (!deletingSlug) setPendingDelete(null);
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 500,
+            background: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+          }}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              confirmDelete();
+            }}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              padding: '28px',
+              borderRadius: '16px',
+              border: '1px solid var(--border)',
+              background: 'var(--bg)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+            }}
+          >
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--fg)', marginBottom: '10px' }}>
+              Delete this project?
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '6px' }}>
+              You are about to permanently delete <strong style={{ color: 'var(--fg)' }}>{pendingDelete.title}</strong>. It will disappear from your website right away and this can't be undone.
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '16px' }}>
+              To confirm, type <strong style={{ color: '#dc2626' }}>DELETE</strong> below.
+            </p>
+            <input
+              style={inputStyle}
+              value={deleteText}
+              onChange={(e) => setDeleteText(e.target.value)}
+              placeholder="Type DELETE"
+              autoFocus
+              autoComplete="off"
+            />
+            {deleteError && (
+              <p style={{ color: '#dc2626', fontSize: '13px', marginTop: '12px' }}>{deleteError}</p>
+            )}
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                style={btnGhost}
+                onClick={() => setPendingDelete(null)}
+                disabled={Boolean(deletingSlug)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!deleteConfirmed || Boolean(deletingSlug)}
+                style={{
+                  ...btnPrimary,
+                  background: '#dc2626',
+                  opacity: !deleteConfirmed || deletingSlug ? 0.45 : 1,
+                  cursor: !deleteConfirmed || deletingSlug ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {deletingSlug ? 'Deleting…' : 'Delete project'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

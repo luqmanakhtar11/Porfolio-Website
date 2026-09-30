@@ -49,9 +49,45 @@ function setStoredSession(session: StoredSession | null) {
   }
 }
 
+// ---- Inactivity timeout -------------------------------------------------
+// The admin is signed out automatically after 10 minutes with no activity.
+// "Activity" is recorded by the Admin page (clicks, typing, scrolling, touch)
+// via touchActivity(). The timestamp lives in localStorage so the rule also
+// applies if the tab is closed and reopened later.
+
+export const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
+const ACTIVITY_KEY = 'portfolio_admin_last_active';
+
+export function touchActivity(): void {
+  try {
+    localStorage.setItem(ACTIVITY_KEY, String(Date.now()));
+  } catch {
+    /* storage unavailable — ignore */
+  }
+}
+
+function lastActivity(): number {
+  try {
+    const raw = localStorage.getItem(ACTIVITY_KEY);
+    return raw ? Number(raw) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** True when a session exists but the admin has been idle longer than the timeout. */
+export function isIdleExpired(): boolean {
+  return Boolean(getStoredSession()) && Date.now() - lastActivity() > IDLE_TIMEOUT_MS;
+}
+
 export function isLoggedIn(): boolean {
   const s = getStoredSession();
-  return Boolean(s && s.expires_at * 1000 > Date.now());
+  if (!s || s.expires_at * 1000 <= Date.now()) return false;
+  if (isIdleExpired()) {
+    setStoredSession(null);
+    return false;
+  }
+  return true;
 }
 
 async function refreshSessionIfNeeded(): Promise<StoredSession | null> {
@@ -97,15 +133,25 @@ export async function signIn(email: string, password: string): Promise<void> {
     refresh_token: data.refresh_token,
     expires_at: Math.floor(Date.now() / 1000) + data.expires_in,
   });
+  touchActivity();
 }
 
 export function signOut(): void {
   setStoredSession(null);
+  try {
+    localStorage.removeItem(ACTIVITY_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Authorization header to use for a write request: the signed-in user's token if present, otherwise the anon key (which RLS will reject for writes). */
 async function authHeader(): Promise<string> {
   const { key } = requireConfig();
+  if (isIdleExpired()) {
+    signOut();
+    throw new Error('Your session expired after 10 minutes of inactivity. Please sign in again.');
+  }
   const session = await refreshSessionIfNeeded();
   return `Bearer ${session ? session.access_token : key}`;
 }
