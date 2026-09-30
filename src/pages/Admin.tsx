@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useState, type CSSProperties, type Dispatch, type FormEvent, type SetStateAction } from 'react';
 import { Link } from 'react-router';
 import {
   isSupabaseConfigured,
@@ -307,6 +307,389 @@ function LoginForm({ onSuccess, notice }: { onSuccess: () => void; notice?: stri
   );
 }
 
+/* ─── Gallery images: 3-column grid, drag to reorder (or use the arrows) ─── */
+type GalleryItem = { id: string; src: string; caption: string };
+
+let galleryIdCounter = 0;
+function newGalleryId(): string {
+  galleryIdCounter += 1;
+  return `g${galleryIdCounter}-${Date.now().toString(36)}`;
+}
+
+const smallBtn: CSSProperties = {
+  padding: '4px 10px',
+  borderRadius: '6px',
+  border: '1px solid var(--border)',
+  background: 'transparent',
+  color: 'var(--fg)',
+  fontFamily: 'var(--f-sans)',
+  fontSize: '13px',
+  cursor: 'pointer',
+};
+
+function GalleryCard({
+  item,
+  index,
+  total,
+  isDragging,
+  isOver,
+  setImages,
+  onDragStartId,
+  onDragOverId,
+  onDropOnId,
+  onDragEndAny,
+  onMove,
+  onRemove,
+}: {
+  item: GalleryItem;
+  index: number;
+  total: number;
+  isDragging: boolean;
+  isOver: boolean;
+  setImages: Dispatch<SetStateAction<GalleryItem[]>>;
+  onDragStartId: (id: string) => void;
+  onDragOverId: (id: string) => void;
+  onDropOnId: (id: string) => void;
+  onDragEndAny: () => void;
+  onMove: (id: string, delta: number) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(file: File) {
+    setUploading(true);
+    setError(null);
+    touchActivity();
+    try {
+      const url = await uploadImage(file);
+      // Functional update + id lookup: stays correct even if the cards were reordered mid-upload.
+      setImages((prev) => prev.map((im) => (im.id === item.id ? { ...im, src: url } : im)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div
+      data-gallery-card
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        onDragOverId(item.id);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDropOnId(item.id);
+      }}
+      style={{
+        border: `2px ${isOver ? 'dashed' : 'solid'} ${isOver ? 'var(--accent)' : 'var(--border)'}`,
+        borderRadius: '12px',
+        padding: '8px',
+        background: 'var(--surface, transparent)',
+        opacity: isDragging ? 0.4 : 1,
+        transition: 'opacity 0.15s, border-color 0.15s',
+        minWidth: 0,
+      }}
+    >
+      {/* Image tile — this is the drag handle (inputs below stay normally selectable) */}
+      <div
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', item.id);
+          const card = (e.currentTarget as HTMLElement).closest('[data-gallery-card]');
+          if (card) e.dataTransfer.setDragImage(card, 24, 24);
+          onDragStartId(item.id);
+        }}
+        onDragEnd={onDragEndAny}
+        title="Drag to reorder"
+        style={{
+          position: 'relative',
+          aspectRatio: '4 / 3',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          background: 'var(--surface2, rgba(0,0,0,0.05))',
+          cursor: 'grab',
+        }}
+      >
+        {item.src ? (
+          <img
+            src={item.src}
+            alt=""
+            draggable={false}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+          />
+        ) : (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--muted)',
+              fontSize: '12px',
+              fontFamily: 'var(--f-sans)',
+            }}
+          >
+            No image yet
+          </div>
+        )}
+        <span
+          style={{
+            position: 'absolute',
+            top: '6px',
+            left: '6px',
+            minWidth: '24px',
+            height: '24px',
+            padding: '0 6px',
+            borderRadius: '999px',
+            background: 'rgba(0,0,0,0.7)',
+            color: '#fff',
+            fontSize: '12px',
+            fontWeight: 600,
+            fontFamily: 'var(--f-sans)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {index + 1}
+        </span>
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: '6px',
+            right: '6px',
+            padding: '2px 7px',
+            borderRadius: '999px',
+            background: 'rgba(0,0,0,0.7)',
+            color: '#fff',
+            fontSize: '12px',
+            letterSpacing: '1px',
+          }}
+        >
+          ⋮⋮
+        </span>
+        {uploading && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(0,0,0,0.6)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '13px',
+              fontFamily: 'var(--f-sans)',
+            }}
+          >
+            Uploading…
+          </div>
+        )}
+      </div>
+
+      <input
+        type="text"
+        value={item.src}
+        onChange={(e) => {
+          const v = e.target.value;
+          setImages((prev) => prev.map((im) => (im.id === item.id ? { ...im, src: v } : im)));
+        }}
+        placeholder="Paste image URL"
+        style={{ ...inputStyle, marginTop: '8px', padding: '7px 9px', fontSize: '12px' }}
+      />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+        <label style={{ ...smallBtn, display: 'inline-block' }}>
+          {uploading ? '…' : 'Upload'}
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            disabled={uploading}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFile(file);
+              e.target.value = '';
+            }}
+          />
+        </label>
+        <span style={{ flex: 1 }} />
+        <button
+          type="button"
+          aria-label={`Move image ${index + 1} earlier`}
+          title="Move earlier"
+          disabled={index === 0}
+          onClick={() => onMove(item.id, -1)}
+          style={{ ...smallBtn, opacity: index === 0 ? 0.35 : 1, cursor: index === 0 ? 'not-allowed' : 'pointer' }}
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          aria-label={`Move image ${index + 1} later`}
+          title="Move later"
+          disabled={index === total - 1}
+          onClick={() => onMove(item.id, 1)}
+          style={{ ...smallBtn, opacity: index === total - 1 ? 0.35 : 1, cursor: index === total - 1 ? 'not-allowed' : 'pointer' }}
+        >
+          →
+        </button>
+        <button
+          type="button"
+          aria-label={`Remove image ${index + 1}`}
+          title="Remove"
+          onClick={() => onRemove(item.id)}
+          style={{ ...smallBtn, borderColor: '#dc2626', color: '#dc2626' }}
+        >
+          ✕
+        </button>
+      </div>
+      {error && <p style={{ color: '#dc2626', fontSize: '11px', marginTop: '6px', wordBreak: 'break-word' }}>{error}</p>}
+    </div>
+  );
+}
+
+function GalleryGrid({
+  images,
+  setImages,
+}: {
+  images: GalleryItem[];
+  setImages: Dispatch<SetStateAction<GalleryItem[]>>;
+}) {
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+  const [bulk, setBulk] = useState<{ done: number; total: number } | null>(null);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+
+  function reorder(fromId: string, toId: string) {
+    if (fromId === toId) return;
+    setImages((prev) => {
+      const from = prev.findIndex((im) => im.id === fromId);
+      const to = prev.findIndex((im) => im.id === toId);
+      if (from < 0 || to < 0) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+
+  function move(id: string, delta: number) {
+    setImages((prev) => {
+      const from = prev.findIndex((im) => im.id === id);
+      const to = from + delta;
+      if (from < 0 || to < 0 || to >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+
+  function remove(id: string) {
+    setImages((prev) => prev.filter((im) => im.id !== id));
+  }
+
+  function clearDrag() {
+    setDragId(null);
+    setOverId(null);
+  }
+
+  // Upload many files at once; they are added in the order chosen, one after another.
+  async function uploadMany(files: File[]) {
+    if (files.length === 0) return;
+    setBulkError(null);
+    setBulk({ done: 0, total: files.length });
+    const failed: string[] = [];
+    for (const file of files) {
+      touchActivity(); // a long upload shouldn't trigger the idle sign-out
+      try {
+        const url = await uploadImage(file);
+        setImages((prev) => [...prev, { id: newGalleryId(), src: url, caption: '' }]);
+      } catch {
+        failed.push(file.name);
+      }
+      setBulk((b) => (b ? { ...b, done: b.done + 1 } : b));
+    }
+    setBulk(null);
+    if (failed.length > 0) setBulkError(`These files could not be uploaded: ${failed.join(', ')}`);
+  }
+
+  return (
+    <div>
+      <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px', lineHeight: 1.6 }}>
+        Images appear in the gallery in the order shown here (1 first). Drag a card by its picture to reorder — or use
+        the ← → buttons (on a phone, use the buttons).
+      </p>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+          gap: '14px',
+          marginBottom: '14px',
+        }}
+      >
+        {images.map((item, i) => (
+          <GalleryCard
+            key={item.id}
+            item={item}
+            index={i}
+            total={images.length}
+            isDragging={dragId === item.id}
+            isOver={overId === item.id && dragId !== null && dragId !== item.id}
+            setImages={setImages}
+            onDragStartId={setDragId}
+            onDragOverId={(id) => {
+              if (dragId) setOverId(id);
+            }}
+            onDropOnId={(id) => {
+              if (dragId) reorder(dragId, id);
+              clearDrag();
+            }}
+            onDragEndAny={clearDrag}
+            onMove={move}
+            onRemove={remove}
+          />
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <label style={{ ...btnPrimary, display: 'inline-block', fontSize: '13px', padding: '8px 16px', opacity: bulk ? 0.6 : 1 }}>
+          {bulk ? `Uploading ${Math.min(bulk.done + 1, bulk.total)} of ${bulk.total}…` : 'Upload images (select many)'}
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            disabled={Boolean(bulk)}
+            onChange={(e) => {
+              const files = e.target.files ? Array.from(e.target.files) : [];
+              e.target.value = '';
+              uploadMany(files);
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
+          onClick={() => setImages((prev) => [...prev, { id: newGalleryId(), src: '', caption: '' }])}
+        >
+          + Add one by URL
+        </button>
+      </div>
+      {bulkError && <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '10px' }}>{bulkError}</p>}
+    </div>
+  );
+}
+
 /* ─── Project editor form ─── */
 function ProjectEditor({
   initial,
@@ -324,24 +707,18 @@ function ProjectEditor({
   const [draft, setDraft] = useState<Project>(initial);
   const [toolsText, setToolsText] = useState(initial.tools.join(', '));
   const [tagsText, setTagsText] = useState((initial.tags ?? []).join(', '));
-  const [galleryImages, setGalleryImages] = useState<{ src: string; caption: string }[]>(
-    initial.caseStudy?.finalImages && initial.caseStudy.finalImages.length > 0
-      ? initial.caseStudy.finalImages
-      : []
+  const [galleryImages, setGalleryImages] = useState<GalleryItem[]>(() =>
+    (initial.caseStudy?.finalImages ?? []).map((im) => ({
+      id: newGalleryId(),
+      src: im.src,
+      caption: im.caption,
+    }))
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function set<K extends keyof Project>(key: K, value: Project[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
-  }
-
-  function moveGalleryImage(from: number, to: number) {
-    if (to < 0 || to >= galleryImages.length) return;
-    const next = [...galleryImages];
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
-    setGalleryImages(next);
   }
 
   function chooseCategory(c: Category) {
@@ -393,7 +770,10 @@ function ProjectEditor({
       .filter(Boolean)
       .slice(0, MAX_TAGS);
 
-    const cleanGalleryImages = galleryImages.filter((img) => img.src.trim());
+    // Drop empty slots and the internal ids; order is exactly what's on screen.
+    const cleanGalleryImages = galleryImages
+      .filter((img) => img.src.trim())
+      .map(({ src, caption }) => ({ src, caption }));
 
     const payload: Project = {
       ...draft,
@@ -425,7 +805,7 @@ function ProjectEditor({
   }
 
   return (
-    <form onSubmit={handleSave} style={{ maxWidth: '640px' }}>
+    <form onSubmit={handleSave} style={{ maxWidth: '760px' }}>
       <div style={fieldWrap}>
         <label style={labelStyle}>Title (required)</label>
         <input style={inputStyle} value={draft.title} onChange={(e) => set('title', e.target.value)} placeholder="Give your project a title" required />
@@ -518,62 +898,7 @@ function ProjectEditor({
 
       <div style={fieldWrap}>
         <label style={labelStyle}>Gallery images (shown when someone clicks this project)</label>
-        {galleryImages.length > 1 && (
-          <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '10px' }}>
-            Use the ↑ ↓ arrows to change the order. Images appear in the gallery top to bottom, exactly as listed here.
-          </p>
-        )}
-        {galleryImages.map((img, i) => (
-          <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0, paddingTop: '22px' }}>
-              <button
-                type="button"
-                aria-label={`Move image ${i + 1} up`}
-                title="Move up"
-                disabled={i === 0}
-                onClick={() => moveGalleryImage(i, i - 1)}
-                style={{ ...btnGhost, padding: '4px 10px', fontSize: '14px', opacity: i === 0 ? 0.35 : 1, cursor: i === 0 ? 'not-allowed' : 'pointer' }}
-              >
-                ↑
-              </button>
-              <button
-                type="button"
-                aria-label={`Move image ${i + 1} down`}
-                title="Move down"
-                disabled={i === galleryImages.length - 1}
-                onClick={() => moveGalleryImage(i, i + 1)}
-                style={{ ...btnGhost, padding: '4px 10px', fontSize: '14px', opacity: i === galleryImages.length - 1 ? 0.35 : 1, cursor: i === galleryImages.length - 1 ? 'not-allowed' : 'pointer' }}
-              >
-                ↓
-              </button>
-            </div>
-            <div style={{ flex: 1 }}>
-              <ImageField
-                label={`Image ${i + 1}`}
-                value={img.src}
-                onChange={(url) => {
-                  const next = [...galleryImages];
-                  next[i] = { ...next[i], src: url };
-                  setGalleryImages(next);
-                }}
-              />
-            </div>
-            <button
-              type="button"
-              style={{ ...btnDanger, flexShrink: 0 }}
-              onClick={() => setGalleryImages(galleryImages.filter((_, idx) => idx !== i))}
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          style={{ ...btnGhost, fontSize: '13px', padding: '7px 14px' }}
-          onClick={() => setGalleryImages([...galleryImages, { src: '', caption: '' }])}
-        >
-          + Add gallery image
-        </button>
+        <GalleryGrid images={galleryImages} setImages={setGalleryImages} />
       </div>
 
       {error && <p style={{ color: '#dc2626', fontSize: '13px', marginBottom: '16px' }}>{error}</p>}
