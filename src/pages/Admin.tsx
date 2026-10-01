@@ -10,6 +10,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  reorderProjects,
   uploadImage,
   GRAPHICS_SUBCATEGORIES,
   type Category,
@@ -916,6 +917,180 @@ function ProjectEditor({
 }
 
 /* ─── Main admin page ─── */
+/* ─── One project card in the admin grid (drag by the picture, or use ← →) ─── */
+function AdminProjectCard({
+  project,
+  index,
+  total,
+  isDragging,
+  isOver,
+  deleting,
+  onDragStartSlug,
+  onDragOverSlug,
+  onDropOnSlug,
+  onDragEndAny,
+  onMove,
+  onEdit,
+  onDelete,
+}: {
+  project: Project;
+  index: number;
+  total: number;
+  isDragging: boolean;
+  isOver: boolean;
+  deleting: boolean;
+  onDragStartSlug: (slug: string) => void;
+  onDragOverSlug: (slug: string) => void;
+  onDropOnSlug: (slug: string) => void;
+  onDragEndAny: () => void;
+  onMove: (slug: string, delta: number) => void;
+  onEdit: (p: Project) => void;
+  onDelete: (p: Project) => void;
+}) {
+  return (
+    <div
+      data-project-card
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        onDragOverSlug(project.slug);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDropOnSlug(project.slug);
+      }}
+      style={{
+        border: `2px ${isOver ? 'dashed' : 'solid'} ${isOver ? 'var(--accent)' : 'var(--border)'}`,
+        borderRadius: '14px',
+        padding: '8px',
+        opacity: isDragging ? 0.4 : 1,
+        transition: 'opacity 0.15s, border-color 0.15s',
+        minWidth: 0,
+      }}
+    >
+      <div
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', project.slug);
+          const card = (e.currentTarget as HTMLElement).closest('[data-project-card]');
+          if (card) e.dataTransfer.setDragImage(card, 24, 24);
+          onDragStartSlug(project.slug);
+        }}
+        onDragEnd={onDragEndAny}
+        title="Drag to reorder"
+        style={{
+          position: 'relative',
+          aspectRatio: '4 / 3',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          background: project.imageBg || 'var(--surface2, rgba(0,0,0,0.05))',
+          cursor: 'grab',
+        }}
+      >
+        {project.image ? (
+          <img
+            src={project.image}
+            alt=""
+            draggable={false}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: '12px' }}>
+            No cover image
+          </div>
+        )}
+        <span
+          style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            minWidth: '26px',
+            height: '26px',
+            padding: '0 7px',
+            borderRadius: '999px',
+            background: 'rgba(0,0,0,0.7)',
+            color: '#fff',
+            fontSize: '12px',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {index + 1}
+        </span>
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            padding: '2px 8px',
+            borderRadius: '999px',
+            background: 'rgba(0,0,0,0.7)',
+            color: '#fff',
+            fontSize: '12px',
+            letterSpacing: '1px',
+          }}
+        >
+          ⋮⋮
+        </span>
+      </div>
+
+      <div style={{ padding: '10px 4px 0' }}>
+        <p
+          title={project.title}
+          style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {project.title}
+        </p>
+        <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+          {project.year} · {project.categories.join(', ') || 'No category'}
+        </p>
+        {project.subCategory && (
+          <p style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '2px' }}>{project.subCategory}</p>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          aria-label={`Move ${project.title} earlier`}
+          title="Move earlier"
+          disabled={index === 0}
+          onClick={() => onMove(project.slug, -1)}
+          style={{ ...smallBtn, opacity: index === 0 ? 0.35 : 1, cursor: index === 0 ? 'not-allowed' : 'pointer' }}
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          aria-label={`Move ${project.title} later`}
+          title="Move later"
+          disabled={index === total - 1}
+          onClick={() => onMove(project.slug, 1)}
+          style={{ ...smallBtn, opacity: index === total - 1 ? 0.35 : 1, cursor: index === total - 1 ? 'not-allowed' : 'pointer' }}
+        >
+          →
+        </button>
+        <span style={{ flex: 1 }} />
+        <button type="button" style={smallBtn} onClick={() => onEdit(project)}>
+          Edit
+        </button>
+        <button
+          type="button"
+          disabled={deleting}
+          onClick={() => onDelete(project)}
+          style={{ ...smallBtn, borderColor: '#dc2626', color: '#dc2626' }}
+        >
+          {deleting ? '…' : 'Delete'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const IDLE_MESSAGE = 'You were signed out after 10 minutes of inactivity. Please sign in again.';
 
 export default function Admin() {
@@ -929,6 +1104,12 @@ export default function Admin() {
   const [pendingDelete, setPendingDelete] = useState<Project | null>(null);
   const [deleteText, setDeleteText] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  // Re-ordering: `order` holds the unsaved arrangement (list of slugs); null = nothing changed.
+  const [order, setOrder] = useState<string[] | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [dragSlug, setDragSlug] = useState<string | null>(null);
+  const [overSlug, setOverSlug] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = 'Admin — Portfolio';
@@ -1005,6 +1186,59 @@ export default function Admin() {
 
   const deleteConfirmed = deleteText.trim().toUpperCase() === 'DELETE';
 
+  // The list as shown on screen: the saved order, or the unsaved arrangement if one is pending.
+  // Projects added/removed since the arrangement was made are handled (removed ones drop out, new ones go last).
+  const displayed: Project[] = order
+    ? [
+        ...order
+          .map((s) => projects.find((p) => p.slug === s))
+          .filter((p): p is Project => Boolean(p)),
+        ...projects.filter((p) => !order.includes(p.slug)),
+      ]
+    : projects;
+  const orderDirty = order !== null && displayed.some((p, i) => p.slug !== projects[i]?.slug);
+
+  function reorderProject(fromSlug: string, toSlug: string) {
+    if (fromSlug === toSlug) return;
+    const slugs = displayed.map((p) => p.slug);
+    const from = slugs.indexOf(fromSlug);
+    const to = slugs.indexOf(toSlug);
+    if (from < 0 || to < 0) return;
+    const next = [...slugs];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setOrder(next);
+  }
+
+  function moveProject(slug: string, delta: number) {
+    const slugs = displayed.map((p) => p.slug);
+    const from = slugs.indexOf(slug);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= slugs.length) return;
+    const next = [...slugs];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setOrder(next);
+  }
+
+  async function saveOrder() {
+    setSavingOrder(true);
+    setOrderError(null);
+    try {
+      await reorderProjects(displayed.map((p) => p.slug));
+      await refresh(); // reload first, so the grid never flashes the old order
+      setOrder(null);
+    } catch (e) {
+      setOrderError(e instanceof Error ? e.message : 'Could not save the order.');
+      if (!isLoggedIn()) {
+        setSessionNotice(IDLE_MESSAGE);
+        setAuthed(false);
+      }
+    } finally {
+      setSavingOrder(false);
+    }
+  }
+
   async function confirmDelete() {
     if (!pendingDelete || !deleteConfirmed) return;
     const slug = pendingDelete.slug;
@@ -1028,7 +1262,7 @@ export default function Admin() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--f-sans)', padding: '40px 24px' }}>
-      <div style={{ maxWidth: '880px', margin: '0 auto' }}>
+      <div style={{ maxWidth: editing ? '880px' : '1100px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--fg)' }}>Projects</h1>
@@ -1064,57 +1298,88 @@ export default function Admin() {
 
             {loading && <p style={{ color: 'var(--muted)' }}>Loading…</p>}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {projects.map((p) => (
-                <div
-                  key={p.slug}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    border: '1px solid var(--border)',
+            {orderError && (
+              <p style={{ color: '#dc2626', fontSize: '13px', marginBottom: '12px' }}>{orderError}</p>
+            )}
+
+            {orderDirty && (
+              <div
+                style={{
+                  position: 'sticky',
+                  top: '12px',
+                  zIndex: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  flexWrap: 'wrap',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--accent)',
+                  background: 'var(--bg)',
+                  boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
+                }}
+              >
+                <span style={{ flex: 1, minWidth: '180px', fontSize: '13px', color: 'var(--fg)' }}>
+                  You changed the order. It is not saved yet.
+                </span>
+                <button
+                  type="button"
+                  style={btnGhost}
+                  disabled={savingOrder}
+                  onClick={() => {
+                    setOrder(null);
+                    setOrderError(null);
                   }}
                 >
-                  <div
-                    style={{
-                      width: '56px',
-                      height: '42px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      background: p.imageBg,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {p.image && <img src={p.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '14px' }}>{p.title}</p>
-                    <p style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                      {p.year} · {p.categories.join(', ') || 'No categories'} · /work/{p.slug}
-                    </p>
-                  </div>
-                  <button style={{ ...btnGhost, padding: '7px 14px', fontSize: '13px' }} onClick={() => setEditing(p)}>
-                    Edit
-                  </button>
-                  <button
-                    style={btnDanger}
-                    onClick={() => {
-                      setPendingDelete(p);
-                      setDeleteText('');
-                      setDeleteError(null);
-                    }}
-                    disabled={deletingSlug === p.slug}
-                  >
-                    {deletingSlug === p.slug ? 'Deleting…' : 'Delete'}
-                  </button>
-                </div>
+                  Reset
+                </button>
+                <button type="button" style={btnPrimary} disabled={savingOrder} onClick={saveOrder}>
+                  {savingOrder ? 'Saving…' : 'Save order'}
+                </button>
+              </div>
+            )}
+
+            {projects.length > 1 && (
+              <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '14px' }}>
+                Drag a card by its picture (or use the ← → buttons) to rearrange. Number 1 shows first on your website.
+              </p>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+              {displayed.map((p, i) => (
+                <AdminProjectCard
+                  key={p.slug}
+                  project={p}
+                  index={i}
+                  total={displayed.length}
+                  isDragging={dragSlug === p.slug}
+                  isOver={Boolean(dragSlug) && overSlug === p.slug && dragSlug !== p.slug}
+                  deleting={deletingSlug === p.slug}
+                  onDragStartSlug={setDragSlug}
+                  onDragOverSlug={setOverSlug}
+                  onDropOnSlug={(slug) => {
+                    if (dragSlug) reorderProject(dragSlug, slug);
+                    setDragSlug(null);
+                    setOverSlug(null);
+                  }}
+                  onDragEndAny={() => {
+                    setDragSlug(null);
+                    setOverSlug(null);
+                  }}
+                  onMove={moveProject}
+                  onEdit={(proj) => setEditing(proj)}
+                  onDelete={(proj) => {
+                    setPendingDelete(proj);
+                    setDeleteText('');
+                    setDeleteError(null);
+                  }}
+                />
               ))}
-              {!loading && projects.length === 0 && (
-                <p style={{ color: 'var(--muted)', fontSize: '14px' }}>No projects yet — add your first one above.</p>
-              )}
             </div>
+            {!loading && projects.length === 0 && (
+              <p style={{ color: 'var(--muted)', fontSize: '14px' }}>No projects yet — add your first one above.</p>
+            )}
           </>
         )}
       </div>

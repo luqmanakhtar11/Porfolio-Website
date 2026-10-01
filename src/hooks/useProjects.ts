@@ -6,10 +6,10 @@ export function useProjects() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback((): Promise<void> => {
     setLoading(true);
     setError(null);
-    fetchProjects()
+    return fetchProjects()
       .then(setProjects)
       .catch((e) => setError(e instanceof Error ? e.message : 'Could not load projects.'))
       .finally(() => setLoading(false));

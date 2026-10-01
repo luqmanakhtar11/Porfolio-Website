@@ -301,6 +301,33 @@ export async function deleteProject(slug: string): Promise<void> {
   }
 }
 
+/**
+ * Saves a new display order. `slugsInOrder` is the full list, first = shown first
+ * on the website. Each project gets sort_order = its position (1, 2, 3 …).
+ */
+export async function reorderProjects(slugsInOrder: string[]): Promise<void> {
+  const { url, key } = requireConfig();
+  const auth = await authHeader();
+  const results = await Promise.all(
+    slugsInOrder.map((slug, i) =>
+      fetch(`${url}/rest/v1/projects?slug=eq.${encodeURIComponent(slug)}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: key,
+          Authorization: auth,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ sort_order: i + 1 }),
+      })
+    )
+  );
+  const failed = results.filter((r) => !r.ok).length;
+  if (failed > 0) {
+    throw new Error(`Could not save the new order (${failed} of ${results.length} updates failed). Please try again.`);
+  }
+}
+
 // ---- Image uploads ------------------------------------------------------
 
 const BUCKET = 'project-images';
