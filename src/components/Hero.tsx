@@ -4,7 +4,7 @@ import portraitSrc from '../imports/9869a790-96ba-464a-8397-1b925d67c518.png';
 
 const STATS = [
   { num: '5+', label: 'Years of experience' },
-  { num: '100+', label: 'Projects delivered' },
+  { num: '50+', label: 'Projects delivered' },
   { num: '1×', label: 'Employee of the Year- 2022' },
   { num: '6×', label: 'Employee of the Month' },
 ];
