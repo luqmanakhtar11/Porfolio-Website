@@ -47,7 +47,9 @@ export default function Contact() {
 
               <div className={`reveal ${inView ? 'v' : ''} flex items-center gap-4`} style={{ animationDelay: '0.24s' }}>
                 <a
-                  href="mailto:luqmanakhtar3@gmail.com"
+                  href="https://wa.me/923169113272"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
