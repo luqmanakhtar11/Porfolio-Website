@@ -1,5 +1,5 @@
 import { useInView } from '../hooks/useInView';
-import aboutPhoto from '../imports/unnamed-1.jpg';
+const aboutPhoto = 'https://res.cloudinary.com/pzdwfxph/image/upload/f_auto,q_auto/v1790889282/unnamed.jpg';
 
 const paras = [
   "I started my design journey with a passion for visual communication — how images, type, and layout can convey meaning beyond words. That foundation in graphic design shaped the way I approach every digital product I work on.",
