@@ -47,7 +47,7 @@ function CapCard({ cap, index }: { cap: typeof caps[0]; index: number }) {
         borderBottom: '1px solid var(--border)',
       }}
     >
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '40px', alignItems: 'start' }}
+      <div style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '40px', alignItems: 'start' }}
         className="hidden md:grid">
         <div>
           <span style={{ fontSize: '11px', fontFamily: 'var(--f-mono)', color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>0{index + 1}</span>

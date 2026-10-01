@@ -1,9 +1,8 @@
 import { useInView } from '../hooks/useInView';
 
 const socials = [
-  { label: 'Email', value: 'luqman@akhtar.design', href: 'mailto:luqman@akhtar.design' },
-  { label: 'LinkedIn', value: 'linkedin.com/in/mluqmanakhtar', href: '#' },
-  { label: 'Behance', value: 'behance.net/luqmanakhtar_uiux', href: '#' },
+  { label: 'Email', value: 'luqmanakhtar3@gmail.com', href: 'mailto:luqmanakhtar3@gmail.com' },
+  { label: 'LinkedIn', value: 'linkedin.com/in/luqmanakhtar', href: 'https://www.linkedin.com/in/luqmanakhtar/' },
 ];
 
 export default function Contact() {
@@ -48,7 +47,7 @@ export default function Contact() {
 
               <div className={`reveal ${inView ? 'v' : ''} flex items-center gap-4`} style={{ animationDelay: '0.24s' }}>
                 <a
-                  href="mailto:luqman@akhtar.design"
+                  href="mailto:luqmanakhtar3@gmail.com"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -81,6 +80,7 @@ export default function Contact() {
                   <a
                     key={s.label}
                     href={s.href}
+                    {...(s.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                     className="group flex items-center justify-between py-5"
                     style={{
                       borderBottom: '1px solid var(--border)',
