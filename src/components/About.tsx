@@ -31,7 +31,7 @@ export default function About() {
               src={aboutPhoto}
               alt="M. Luqman Akhtar"
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: 'center top' }}
+              style={{ objectPosition: '36% center' }}
               loading="lazy"
             />
             <div
