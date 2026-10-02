@@ -257,6 +257,46 @@ export default function Resume() {
 
         <Divider />
 
+        {/* Languages */}
+        <section style={{ marginBottom: 60 }}>
+          <SectionLabel>Languages</SectionLabel>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+            <span style={{ fontFamily: 'var(--f-serif)', fontSize: 20, fontWeight: 400 }}>English</span>
+            <span style={{ fontSize: 12, letterSpacing: '0.06em', color: 'var(--fg2)', textTransform: 'uppercase' }}>CEFR levels</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+            {englishSkills.map((sk) => {
+              const filled = CEFR.indexOf(sk.level) + 1;
+              return (
+                <div
+                  key={sk.skill}
+                  style={{ padding: '14px 16px', borderRadius: 12, border: '1.5px solid var(--line, rgba(0,0,0,0.1))' }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>{sk.skill}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>{sk.level}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 4 }} aria-label={`${sk.level}, level ${filled} of 6`}>
+                    {CEFR.map((lv, i) => (
+                      <span
+                        key={lv}
+                        title={lv}
+                        style={{
+                          flex: 1, height: 6, borderRadius: 3,
+                          background: i < filled ? 'var(--accent)' : 'var(--line, rgba(0,0,0,0.1))',
+                          opacity: i < filled ? 1 : 0.6,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <Divider />
+
         {/* Bottom CTA strip */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, paddingTop: 8 }}>
           <p style={{ margin: 0, fontSize: 14, color: 'var(--fg2)' }}>
@@ -296,6 +336,15 @@ export default function Resume() {
     </div>
   );
 }
+
+// ✏️ English proficiency (CEFR scale: A1 → C2)
+const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const englishSkills = [
+  { skill: 'Speaking', level: 'B1' },
+  { skill: 'Listening', level: 'B2' },
+  { skill: 'Reading', level: 'B2' },
+  { skill: 'Writing', level: 'B1' },
+];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
