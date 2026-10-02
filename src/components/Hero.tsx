@@ -29,7 +29,7 @@ const NOTES: { text: string; d: [number, number]; m?: [number, number]; hot?: bo
   { text: '5+ years. Zero boring screens.', d: [80, 23] },
   { text: '🏆 Employee of the Year, 2022', d: [56, 26], m: [52, 36] },
   { text: '6× Employee of the Month. Yes, six.', d: [80, 32] },
-  { text: '50+ projects, from banking apps to brand kits', d: [55, 38], m: [5, 48] },
+  { text: '50+ projects, from Graphics to UI/UX Designs', d: [55, 38], m: [5, 48] },
   { text: "Banking apps that don't feel like banking apps.", d: [76, 44] },
   { text: 'If it needs explaining, it needs redesigning.', d: [56, 50], m: [36, 62] },
   { text: 'Research first. Pixels second.', d: [82, 56], m: [5, 76] },
