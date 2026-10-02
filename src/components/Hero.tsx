@@ -24,8 +24,8 @@ const STATS = [
 // d = position on desktop (% of the hero), m = position on phones (% of the photo area).
 // Leave out "m" to hide a line on phones. hot: true = pink highlight.
 const NOTES: { text: string; d: [number, number]; m?: [number, number]; hot?: boolean }[] = [
-  { text: 'Started in print. Fell for pixels.', d: [50, 15], m: [5, 6] },
-  { text: '✦ You found the secret layer. Every pixel here is on purpose.', d: [70, 15], m: [30, 20], hot: true },
+  { text: 'Started in print. Fell for pixels.', d: [46, 15], m: [5, 6] },
+  { text: '✦ You found the secret layer. Every pixel here is on purpose.', d: [66, 15], m: [30, 20], hot: true },
   { text: '5+ years. Zero boring screens.', d: [80, 23] },
   { text: '🏆 Employee of the Year, 2022', d: [56, 26], m: [52, 36] },
   { text: '6× Employee of the Month. Yes, six.', d: [80, 32] },
@@ -245,7 +245,7 @@ export default function Hero() {
           .hero-x .hx-photo-shade { display: none; }
           .hero-x .hx-content { padding-top: 120px; }
           .hero-x .hx-notes { top: 0; height: 100%; }
-          .hero-x .hx-note { left: var(--dx); top: var(--dy); max-width: 320px; white-space: nowrap; }
+          .hero-x .hx-note { left: var(--dx); top: var(--dy); max-width: none; white-space: nowrap; }
           .hero-x .hx-note.hx-desk-only { display: block; }
         }
         @media (prefers-reduced-motion: reduce) {
