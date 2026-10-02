@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <!-- Background -->
-  <rect width="32" height="32" rx="8" fill="#B5712A"/>
-  <!-- Stylised "LA" monogram -->
-  <!-- L -->
-  <path d="M6 8 L6 24 L13 24" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- A -->
-  <path d="M16 24 L21 8 L26 24 M18.5 18 L23.5 18" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="0.55" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#D946EF"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#g)"/>
+  <!-- "LA" monogram -->
+  <path d="M13 17 V47 H27" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M31 47 L40.5 17 L50 47 M34.6 37 H46.4" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
