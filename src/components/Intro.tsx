@@ -65,7 +65,7 @@ export default function Intro() {
                 marginBottom: '40px',
               }}
             >
-              {"I'm a designer who wears a few hats: product, UI/UX, branding and graphics. Honestly, my job is to sweat the small stuff so the people using what I make never have to think twice. Whether it's a banking app or a brand launch, I want it to feel clear, useful and a little bit delightful."}
+              {"I'm a designer who wears a few hats: product, UI/UX, branding and graphics. Honestly, my job is to sweat the small stuff so the people using what I make never have to think twice. Whether it's a banking app or a brand launch, I want it to feel clear, useful and a little bit delightful. These days I build what I design too, using agentic AI and MCP to take ideas from Figma to live."}
             </p>
 
             <div className="flex flex-col gap-5">

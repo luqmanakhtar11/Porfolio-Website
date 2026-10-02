@@ -32,6 +32,11 @@ const caps = [
     desc: 'Logos, brand kits and marketing visuals that feel like they belong to the same family.',
     skills: ['Brand Identity', 'Logo Design', 'Packaging', 'Marketing Collateral', 'Editorial Design', 'Social Media', 'Print Design', 'Apparel & Merch'],
   },
+  {
+    label: 'AI-Powered Building',
+    desc: "I don't stop at the handoff. I take designs from Figma to a live product with agentic AI workflows, connecting my tools through MCP so ideas ship faster.",
+    skills: ['Agentic Workflows', 'Agentic Skills', 'MCP (Model Context Protocol)', 'Claude', 'Design-to-Code', 'AI Prototyping', 'React & Tailwind', 'Shipping to Production'],
+  },
 ];
 
 function CapCard({ cap, index }: { cap: typeof caps[0]; index: number }) {

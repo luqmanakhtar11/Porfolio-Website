@@ -6,7 +6,7 @@ import portraitSrc from '../imports/9869a790-96ba-464a-8397-1b925d67c518.png';
  * HERO — "Look behind the design"
  * The hero is dark and moody. The visitor's cursor acts as a flashlight:
  * wherever it moves, it lights up the portrait and reveals a hidden design
- * "blueprint" layer (grid, spacing notes, colour codes, live x/y readout).
+ * "blueprint" layer (grid, spacing notes, punchlines).
  * On touch devices the light drifts by itself and jumps to wherever you tap.
  */
 
@@ -15,7 +15,7 @@ const WORDS = ['apps', 'brands', 'websites', 'dashboards', 'logos'];
 
 const STATS = [
   { value: 5, suffix: '+', label: 'Years of experience' },
-  { value: 50, suffix: '+', label: 'Projects delivered' },
+  { value: 100, suffix: '+', label: 'Projects delivered' },
   { value: 1, suffix: '×', label: 'Employee of the Year · 2022' },
   { value: 6, suffix: '×', label: 'Employee of the Month' },
 ];
@@ -29,14 +29,14 @@ const NOTES: { text: string; d: [number, number]; m?: [number, number]; hot?: bo
   { text: '5+ years. Zero boring screens.', d: [80, 23] },
   { text: '🏆 Employee of the Year, 2022', d: [56, 26], m: [52, 36] },
   { text: '6× Employee of the Month. Yes, six.', d: [80, 32] },
-  { text: '50+ projects, from Graphics to UI/UX Designs', d: [55, 38], m: [5, 48] },
+  { text: '100+ projects, from banking apps to brand kits', d: [55, 38], m: [5, 48] },
   { text: "Banking apps that don't feel like banking apps.", d: [76, 44] },
   { text: 'If it needs explaining, it needs redesigning.', d: [56, 50], m: [36, 62] },
   { text: 'Research first. Pixels second.', d: [82, 56], m: [5, 76] },
-  { text: 'Pixel-perfect is my minimum, not my goal.', d: [58, 62] },
-  { text: 'I speak fluent designer, developer and client.', d: [74, 68] },
+  { text: 'Designed by me. Built with an AI agent I direct.', d: [58, 62] },
+  { text: 'Figma → MCP → live. No handoff gaps.', d: [74, 68] },
   { text: "Your users won't notice my work. That's the point.", d: [55, 74] },
-  { text: 'Graphic roots. Product brain.', d: [84, 79] },
+  { text: 'Agentic skills: unlocked 🤖', d: [84, 79] },
   { text: 'Psst… hire me before your competitor does 😉', d: [64, 84], hot: true },
 ];
 
@@ -71,7 +71,6 @@ export default function Hero() {
   const [isTouch, setIsTouch] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
-  const readoutRef = useRef<HTMLSpanElement>(null);
 
   // Intro choreography
   useEffect(() => {
@@ -143,9 +142,6 @@ export default function Hero() {
       pos.y += (target.y - pos.y) * 0.12;
       el.style.setProperty('--mx', `${pos.x.toFixed(1)}px`);
       el.style.setProperty('--my', `${pos.y.toFixed(1)}px`);
-      if (readoutRef.current) {
-        readoutRef.current.textContent = `x ${Math.round(pos.x)}  y ${Math.round(pos.y)}`;
-      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -194,13 +190,6 @@ export default function Hero() {
           border-radius: 50%;
           border: 1px dashed rgba(155,140,255,0.35);
           pointer-events: none;
-        }
-        .hero-x .hx-readout {
-          position: absolute; left: var(--mx); top: var(--my);
-          transform: translate(18px, 18px);
-          font: 600 11px/1 var(--f-mono); letter-spacing: 0.06em;
-          color: #fff; background: #7C7CFF; padding: 5px 8px; border-radius: 6px;
-          white-space: pre; pointer-events: none;
         }
         .hero-x .hx-notes { position: absolute; top: 112px; left: 0; right: 0; height: 46svh; }
         .hero-x .hx-note {
@@ -315,10 +304,9 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* light ring + live coordinates */}
+      {/* light ring */}
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: phase >= 4 ? 1 : 0, transition: 'opacity 0.8s' }}>
         <div className="hx-ring" />
-        <span className="hx-readout" ref={readoutRef} />
       </div>
 
       {/* ── Legibility shade behind the text ── */}
@@ -365,7 +353,7 @@ export default function Hero() {
         >
           <span className="hx-dot" />
           <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(247,246,241,0.85)', fontFamily: 'var(--f-sans)' }}>
-            {"I'm Luqman, a UI/UX & graphic designer"}
+            {"Hi, I'm Luqman, a UI/UX & graphic designer"}
           </span>
         </div>
 
@@ -415,7 +403,7 @@ export default function Hero() {
             transition: 'opacity 0.65s var(--ease2), transform 0.65s var(--ease2)',
           }}
         >
-          Product, UI/UX and brand design for people who sweat the small stuff, just like me.
+          Product, UI/UX and brand design, built with agentic AI. For people who sweat the small stuff, just like me.
         </p>
 
         {/* CTAs */}
