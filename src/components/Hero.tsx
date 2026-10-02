@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router';
 import portraitSrc from '../imports/9869a790-96ba-464a-8397-1b925d67c518.png';
 
@@ -20,15 +20,24 @@ const STATS = [
   { value: 6, suffix: '×', label: 'Employee of the Month' },
 ];
 
-// Notes scattered on the hidden blueprint layer (positions are % of the hero)
-const NOTES = [
-  { x: 6, y: 16, text: '12-col grid · 40px gutters' },
-  { x: 40, y: 12, text: 'Bricolage Grotesque · 800' },
-  { x: 74, y: 20, text: 'focal point ↓' },
-  { x: 58, y: 46, text: 'contrast ratio 15.8 : 1 ✓' },
-  { x: 84, y: 58, text: '#7C7CFF' },
-  { x: 10, y: 86, text: 'spacing · 8pt system' },
-  { x: 46, y: 80, text: 'line-height 1.02' },
+// ✏️ Hidden punchlines revealed by the flashlight.
+// d = position on desktop (% of the hero), m = position on phones (% of the photo area).
+// Leave out "m" to hide a line on phones. hot: true = pink highlight.
+const NOTES: { text: string; d: [number, number]; m?: [number, number]; hot?: boolean }[] = [
+  { text: 'Started in print. Fell for pixels.', d: [50, 15], m: [5, 6] },
+  { text: '✦ You found the secret layer. Every pixel here is on purpose.', d: [70, 15], m: [30, 20], hot: true },
+  { text: '5+ years. Zero boring screens.', d: [80, 23] },
+  { text: '🏆 Employee of the Year, 2022', d: [56, 26], m: [52, 36] },
+  { text: '6× Employee of the Month. Yes, six.', d: [80, 32] },
+  { text: '100+ projects, from banking apps to brand kits', d: [55, 38], m: [5, 48] },
+  { text: "Banking apps that don't feel like banking apps.", d: [76, 44] },
+  { text: 'If it needs explaining, it needs redesigning.', d: [56, 50], m: [36, 62] },
+  { text: 'Research first. Pixels second.', d: [82, 56], m: [5, 76] },
+  { text: 'Pixel-perfect is my minimum, not my goal.', d: [58, 62] },
+  { text: 'I speak fluent designer, developer and client.', d: [74, 68] },
+  { text: "Your users won't notice my work. That's the point.", d: [55, 74] },
+  { text: 'Graphic roots. Product brain.', d: [84, 79] },
+  { text: 'Psst… hire me before your competitor does 😉', d: [64, 84], hot: true },
 ];
 
 function CountUp({ value, suffix, start }: { value: number; suffix: string; start: boolean }) {
@@ -90,7 +99,10 @@ export default function Hero() {
     const rect = () => el.getBoundingClientRect();
     let { width, height } = rect();
     // start the light on the face area
-    const target = finePointer ? { x: width * 0.76, y: height * 0.4 } : { x: width * 0.5, y: height * 0.22 };
+    const band = () => ({ top: 104, h: window.innerHeight * 0.46 }); // phone photo area
+    const target = finePointer
+      ? { x: width * 0.76, y: height * 0.48 }
+      : { x: width * 0.5, y: band().top + band().h * 0.45 };
     const pos = { ...target };
     let userControlled = false;
     let lastTap = 0;
@@ -123,8 +135,9 @@ export default function Hero() {
       // On touch screens: drift in a slow figure-eight, unless the user tapped recently
       if (!finePointer && !reduce && t - lastTap > 3500) {
         const s = (t - t0) / 1000;
-        target.x = width * (0.5 + 0.3 * Math.sin(s * 0.45));
-        target.y = height * (0.26 + 0.16 * Math.sin(s * 0.9));
+        const b = band();
+        target.x = width * (0.5 + 0.32 * Math.sin(s * 0.45));
+        target.y = b.top + b.h * (0.48 + 0.36 * Math.sin(s * 0.9));
       }
       pos.x += (target.x - pos.x) * 0.12;
       pos.y += (target.y - pos.y) * 0.12;
@@ -189,9 +202,11 @@ export default function Hero() {
           color: #fff; background: #7C7CFF; padding: 5px 8px; border-radius: 6px;
           white-space: pre; pointer-events: none;
         }
+        .hero-x .hx-notes { position: absolute; top: 112px; left: 0; right: 0; height: 46svh; }
         .hero-x .hx-note {
-          position: absolute; font: 500 11px/1.2 var(--f-mono); letter-spacing: 0.05em;
-          color: #B9B0FF; white-space: nowrap;
+          position: absolute; left: var(--px); top: var(--py); max-width: 58%;
+          white-space: normal; font: 500 11px/1.3 var(--f-mono); letter-spacing: 0.04em;
+          color: #CFC8FF;
           padding: 4px 8px; border: 1px solid rgba(155,140,255,0.45); border-radius: 6px;
           background: rgba(17,16,16,0.55);
         }
@@ -210,19 +225,28 @@ export default function Hero() {
         .hero-x .hx-dot { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; animation: hxPulse 2s infinite; flex-shrink: 0; }
         @keyframes hxHint { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
         .hero-x .hx-hint { animation: hxHint 2.4s ease-in-out infinite; }
-        .hero-x .hx-photo-wrap { position: absolute; top: 0; left: 0; right: 0; height: 66svh; }
-        .hero-x .hx-photo-pos { object-position: 54% 30%; }
-        .hero-x .hx-photo-shade { position: absolute; inset: 0; background: linear-gradient(to top, var(--hero-bg) 0%, rgba(10,10,9,0.7) 30%, transparent 60%); }
-        .hero-x .hx-content { padding-top: 46svh; }
-        .hero-x .hx-note:not(.hx-egg) { display: none; }
-        .hero-x .hx-egg { left: 6%; top: 9%; white-space: normal; max-width: 260px; }
+        .hero-x .hx-photo-wrap { position: absolute; top: 104px; left: 0; right: 0; height: 46svh; }
+        .hero-x .hx-photo-feather { display: none; }
+        .hero-x .hx-photo-pos { object-position: 54% 40%; }
+        .hero-x .hx-photo-shade { position: absolute; inset: 0; background: linear-gradient(to top, var(--hero-bg) 0%, rgba(10,10,9,0.6) 30%, transparent 60%), linear-gradient(to bottom, var(--hero-bg) 0%, transparent 18%); }
+        .hero-x .hx-content { padding-top: calc(104px + 40svh); }
+        .hero-x .hx-note.hx-desk-only { display: none; }
+        .hero-x .hx-note.hx-hot { color: #fff; border-color: #F06AE0; background: rgba(240,106,224,0.16); }
         @media (min-width: 768px) {
-          .hero-x .hx-photo-wrap { height: 100%; }
-          .hero-x .hx-photo-pos { object-position: 30% 30%; }
+          .hero-x .hx-photo-wrap { top: 13%; bottom: 0; left: 42%; right: 0; height: auto; }
+          .hero-x .hx-photo-pos { object-position: 50% 40%; }
+          .hero-x .hx-photo-feather {
+            display: block; position: absolute; inset: 0;
+            background:
+              linear-gradient(to right, var(--hero-bg) 0%, transparent 32%),
+              linear-gradient(to bottom, var(--hero-bg) 0%, transparent 22%),
+              linear-gradient(to left, var(--hero-bg) 0%, transparent 14%);
+          }
           .hero-x .hx-photo-shade { display: none; }
           .hero-x .hx-content { padding-top: 120px; }
-          .hero-x .hx-note:not(.hx-egg) { display: block; }
-          .hero-x .hx-egg { left: 62%; top: 70%; white-space: nowrap; max-width: none; }
+          .hero-x .hx-notes { top: 0; height: 100%; }
+          .hero-x .hx-note { left: var(--dx); top: var(--dy); max-width: 320px; white-space: nowrap; }
+          .hero-x .hx-note.hx-desk-only { display: block; }
         }
         @media (prefers-reduced-motion: reduce) {
           .hero-x .hx-word, .hero-x .hx-dot, .hero-x .hx-hint { animation: none; }
@@ -237,6 +261,7 @@ export default function Hero() {
         <div className="hx-photo-wrap">
           <img src={portraitSrc} alt="" aria-hidden="true" className="hx-photo hx-photo-pos hx-dim" />
           <div className="hx-photo-shade" />
+          <div className="hx-photo-feather" />
         </div>
       </div>
 
@@ -248,6 +273,8 @@ export default function Hero() {
       >
         <div className="hx-photo-wrap">
           <img src={portraitSrc} alt="" className="hx-photo hx-photo-pos" />
+          <div className="hx-photo-shade" />
+          <div className="hx-photo-feather" />
         </div>
         <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
           <defs>
@@ -268,14 +295,24 @@ export default function Hero() {
             />
           ))}
         </svg>
-        {NOTES.map((n) => (
-          <span key={n.text} className="hx-note" style={{ left: `${n.x}%`, top: `${n.y}%` }}>
-            {n.text}
-          </span>
-        ))}
-        <span className="hx-note hx-egg" style={{ color: '#fff', borderColor: '#F06AE0' }}>
-          ✦ You found the blueprint. Every pixel here is on purpose.
-        </span>
+        <div className="hx-notes">
+          {NOTES.map((n) => (
+            <span
+              key={n.text}
+              className={`hx-note${n.m ? '' : ' hx-desk-only'}${n.hot ? ' hx-hot' : ''}`}
+              style={
+                {
+                  '--dx': `${n.d[0]}%`,
+                  '--dy': `${n.d[1]}%`,
+                  '--px': `${(n.m ?? n.d)[0]}%`,
+                  '--py': `${(n.m ?? n.d)[1]}%`,
+                } as CSSProperties
+              }
+            >
+              {n.text}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* light ring + live coordinates */}
