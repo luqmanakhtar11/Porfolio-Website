@@ -15,7 +15,7 @@ const WORDS = ['apps', 'brands', 'websites', 'dashboards', 'logos'];
 
 const STATS = [
   { value: 5, suffix: '+', label: 'Years of experience' },
-  { value: 100, suffix: '+', label: 'Projects delivered' },
+  { value: 50, suffix: '+', label: 'Projects delivered' },
   { value: 1, suffix: '×', label: 'Employee of the Year · 2022' },
   { value: 6, suffix: '×', label: 'Employee of the Month' },
 ];
@@ -365,7 +365,7 @@ export default function Hero() {
         >
           <span className="hx-dot" />
           <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(247,246,241,0.85)', fontFamily: 'var(--f-sans)' }}>
-            {"Hi, I'm Luqman, a UI/UX & graphic designer"}
+            {"I'm Luqman, a UI/UX & graphic designer"}
           </span>
         </div>
 
