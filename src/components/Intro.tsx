@@ -1,9 +1,9 @@
 import { useInView } from '../hooks/useInView';
 
 const HIGHLIGHTS = [
-  { num: '5+', label: 'Years of design experience across product, UX/UI & graphic design.' },
-  { num: '3+', label: 'Years focused on UI/UX and digital product design,' },
-  { num: '1x', label: 'Employee of the Year(2022), recognized for design excellence and contribution.' },
+  { num: '5+', label: 'Years of turning blank artboards into real products and brands.' },
+  { num: '3+', label: 'Years living and breathing UI/UX and digital products.' },
+  { num: '1x', label: 'Employee of the Year (2022), and still a little proud of it.' },
 ];
 
 export default function Intro() {
@@ -32,7 +32,7 @@ export default function Intro() {
                 marginBottom: '20px',
               }}
             >
-              Who I am
+              {"Hey, I'm Luqman"}
             </p>
             <h2
               className={`reveal ${inView ? 'v' : ''} font-bold`}
@@ -45,9 +45,9 @@ export default function Intro() {
                 lineHeight: 1.1,
               }}
             >
-              I design experiences that {' '}
+              I turn messy ideas into things that{' '}
               <span style={{ fontFamily: 'var(--f-serif)', fontStyle: 'italic', fontWeight: 400 }}>
-                look purposeful and work beautifully.
+                just make sense.
               </span>
             </h2>
           </div>
@@ -65,8 +65,7 @@ export default function Intro() {
                 marginBottom: '40px',
               }}
             >
-              I’m a multidisciplinary designer working across Product Design, UI/UX, Branding, and Graphic Design.
-              I combine strategic thinking with visual craft to turn complex ideas into clear, intuitive, and engaging experiences from digital products and interfaces to brands and visual communication.
+              {"I'm a designer who wears a few hats: product, UI/UX, branding and graphics. Honestly, my job is to sweat the small stuff so the people using what I make never have to think twice. Whether it's a banking app or a brand launch, I want it to feel clear, useful and a little bit delightful."}
             </p>
 
             <div className="flex flex-col gap-5">

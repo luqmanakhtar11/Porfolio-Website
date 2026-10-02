@@ -4,7 +4,7 @@ import portraitSrc from '../imports/9869a790-96ba-464a-8397-1b925d67c518.png';
 
 const STATS = [
   { num: '5+', label: 'Years of experience' },
-  { num: '50+', label: 'Projects delivered' },
+  { num: '100+', label: 'Projects delivered' },
   { num: '1×', label: 'Employee of the Year- 2022' },
   { num: '6×', label: 'Employee of the Month' },
 ];
@@ -63,15 +63,15 @@ export default function Hero() {
           {/* Headline */}
           <h1
             style={{
-              fontSize: 'clamp(100px, 6.5vw, 100px)',
+              fontSize: 'clamp(48px, 12vw, 100px)',
               lineHeight: 1.0,
               letterSpacing: '-0.04em',
               marginBottom: '36px',
             }}
           >
             {[
-              { text: 'Design That Earns', serif: false },
-              { text: 'trust.', serif: true },
+              { text: 'Design people', serif: false },
+              { text: 'actually enjoy.', serif: true },
             ].map((line, i) => (
               <span key={i} className="line-mask" style={{ display: 'block' }}>
                 <span
@@ -120,7 +120,7 @@ export default function Hero() {
               onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
             >
-              View Work
+              See my work
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>

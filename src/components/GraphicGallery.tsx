@@ -66,15 +66,15 @@ export default function GraphicGallery() {
               className={`reveal ${inView ? 'v' : ''} font-bold`}
               style={{ animationDelay: '0.1s', fontSize: 'clamp(28px, 4vw, 52px)', fontFamily: 'var(--f-sans)', color: 'var(--fg)', letterSpacing: '-0.035em', lineHeight: 1.1 }}
             >
-              Visual work &{' '}
-              <span style={{ fontFamily: 'var(--f-serif)', fontStyle: 'italic', fontWeight: 400 }}>identity.</span>
+              Logos, posters &{' '}
+              <span style={{ fontFamily: 'var(--f-serif)', fontStyle: 'italic', fontWeight: 400 }}>everything in between.</span>
             </h2>
           </div>
           <p
             className={`reveal ${inView ? 'v' : ''} md:max-w-xs`}
             style={{ animationDelay: '0.16s', fontSize: '14px', color: 'var(--muted)', fontFamily: 'var(--f-sans)', lineHeight: 1.7 }}
           >
-            Brand identities, packaging, marketing collateral, and editorial design.
+            The stuff you notice before you ever open an app: brand identities, packaging, social posts and print.
           </p>
         </div>
 

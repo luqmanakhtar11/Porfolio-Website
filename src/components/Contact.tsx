@@ -16,7 +16,7 @@ export default function Contact() {
           <div style={{ marginBottom: '56px' }}>
             <p className={`reveal ${inView ? 'v' : ''}`}
               style={{ fontSize: '13px', fontFamily: 'var(--f-mono)', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '16px' }}>
-              Get in Touch
+              Say hello
             </p>
             <h2 className={`reveal ${inView ? 'v' : ''} font-bold`}
               style={{
@@ -29,9 +29,9 @@ export default function Contact() {
                 maxWidth: '11em',
               }}
             >
-              Have a project worth{' '}
+              Got an idea{' '}
               <span style={{ fontFamily: 'var(--f-serif)', fontStyle: 'italic', fontWeight: 400 }}>
-                designing?
+                worth building?
               </span>
             </h2>
           </div>
@@ -41,8 +41,7 @@ export default function Contact() {
             <div>
               <p className={`reveal ${inView ? 'v' : ''}`}
                 style={{ animationDelay: '0.16s', fontSize: '16px', color: 'var(--muted)', fontFamily: 'var(--f-sans)', lineHeight: 1.8, marginBottom: '36px', maxWidth: '44ch' }}>
-                {"I'm"} always open to interesting products, ambitious teams, and challenging design problems.
-                Whether {"you're"} building something from scratch or need a strategic design partner, {"let's"} talk.
+                {"A new product, a tired old app or a brand that needs a fresh look: I'd love to hear about it. Drop me a message and let's see if we're a good fit."}
               </p>
 
               <div className={`reveal ${inView ? 'v' : ''} flex items-center gap-4`} style={{ animationDelay: '0.24s' }}>
@@ -109,7 +108,7 @@ export default function Contact() {
 
               <div className="flex items-center gap-2 mt-6">
                 <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22C55E', flexShrink: 0 }} />
-                <span style={{ fontSize: '13px', color: 'var(--muted)', fontFamily: 'var(--f-sans)' }}>Available for new projects</span>
+                <span style={{ fontSize: '13px', color: 'var(--muted)', fontFamily: 'var(--f-sans)' }}>Taking on new projects</span>
               </div>
             </div>
           </div>

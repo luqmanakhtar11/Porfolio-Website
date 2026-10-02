@@ -160,7 +160,7 @@ export default function Work() {
                 marginBottom: "12px",
               }}
             >
-              Selected Work
+              {"Things I've made"}
             </p>
             <h2
               className={`reveal ${inView ? "v" : ""} font-bold`}
@@ -173,7 +173,7 @@ export default function Work() {
                 lineHeight: 1.05,
               }}
             >
-              Projects that{" "}
+              A few projects {"I'm"} really{" "}
               <span
                 style={{
                   fontFamily: "var(--f-serif)",
@@ -181,7 +181,7 @@ export default function Work() {
                   fontWeight: 400,
                 }}
               >
-                matter.
+                proud of.
               </span>
             </h2>
           </div>

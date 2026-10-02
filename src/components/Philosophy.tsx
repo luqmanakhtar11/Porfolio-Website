@@ -17,14 +17,14 @@ function useReveal() {
 }
 
 const LINES = [
-  { text: 'Good design gets attention.', serif: false, accent: false, delay: 0.04 },
-  { text: 'Exceptional design earns trust.', serif: false, accent: false, delay: 0.15 },
+  { text: 'Looking good gets noticed.', serif: false, accent: false, delay: 0.04 },
+  { text: 'Being clear gets used.', serif: false, accent: false, delay: 0.15 },
 ] as const;
 
 const PILLARS = [
-  { label: 'Clarity first', body: 'Every decision should reduce cognitive load, not add to it. If it needs explaining, it needs redesigning.' },
-  { label: 'Consistency builds trust', body: 'Users build mental models from patterns. I design systems, not screens — so every interaction feels familiar.' },
-  { label: 'Details are not details', body: 'The micro-interactions, the spacing, the type choices — they accumulate into how something makes you feel.' },
+  { label: 'Clarity first', body: "If someone has to stop and think, I haven't finished designing. If it needs explaining, it needs redesigning." },
+  { label: 'Familiar beats clever', body: 'People learn from patterns. I design systems, not one-off screens, so things feel familiar from the very first tap.' },
+  { label: 'Small stuff, big feeling', body: "Spacing, motion, the right word on a button. Nobody notices them one by one, but together they're why something just feels good." },
 ];
 
 function PhilosophyLine({ text, serif, accent, delay }: typeof LINES[number]) {
@@ -78,7 +78,7 @@ export default function Philosophy() {
           <div>
             <p ref={ref} className={`reveal ${visible ? 'v' : ''}`}
               style={{ fontSize: '13px', fontFamily: 'var(--f-mono)', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '32px' }}>
-              Design Philosophy
+              What I believe
             </p>
             <h2 style={{ fontSize: 'clamp(28px, 4.5vw, 56px)', lineHeight: 1.1, letterSpacing: '-0.035em' }}>
               {LINES.map((l, i) => <PhilosophyLine key={i} {...l} />)}

@@ -6,9 +6,9 @@ function Message() {
   return (
     <span className="ticker-item">
       <strong>
-      <span>This website is under construction.</span>
+      <span>Still putting the finishing touches on this site.</span>
       <span>
-        Full catalog restocks by <b>{RESTOCK_DATE}</b>.
+        New projects landing by <b>{RESTOCK_DATE}</b>.
       </span>
       <span className="ticker-dot" aria-hidden="true">●</span></strong>
     </span>

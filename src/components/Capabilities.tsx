@@ -19,17 +19,17 @@ function useReveal() {
 const caps = [
   {
     label: 'Product & UX',
-    desc: 'End-to-end product design: from research and strategy to detailed interaction design and handoff.',
+    desc: 'Figuring out what to build and how it should work: research, user flows, wireframes and prototypes you can actually click through.',
     skills: ['UX Research', 'User Flows', 'Information Architecture', 'Wireframing', 'Prototyping', 'Usability Testing', 'Interaction Design', 'Design Systems'],
   },
   {
     label: 'UI & Visual Design',
-    desc: 'Crafting interfaces that balance aesthetic precision with functional clarity and accessibility.',
+    desc: "Screens that look sharp, read clearly and work for everyone, whether they're on a phone or a big desktop monitor.",
     skills: ['UI Design', 'Responsive Design', 'Visual Hierarchy', 'Typography Systems', 'Component Libraries', 'Design Tokens', 'Motion Design', 'Dark Mode'],
   },
   {
     label: 'Graphic & Brand',
-    desc: 'Building brand identities and visual systems that communicate with consistency and character.',
+    desc: 'Logos, brand kits and marketing visuals that feel like they belong to the same family.',
     skills: ['Brand Identity', 'Logo Design', 'Packaging', 'Marketing Collateral', 'Editorial Design', 'Social Media', 'Print Design', 'Apparel & Merch'],
   },
 ];
@@ -93,7 +93,7 @@ export default function Capabilities() {
         <div ref={ref} className="mb-2">
           <p className={`reveal ${visible ? 'v' : ''}`}
             style={{ fontSize: '13px', fontFamily: 'var(--f-mono)', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>
-            Capabilities
+            How I can help
           </p>
           <h2 className={`reveal ${visible ? 'v' : ''} font-bold`}
             style={{ animationDelay: '0.1s', fontSize: 'clamp(28px, 4vw, 52px)', fontFamily: 'var(--f-sans)', color: 'var(--fg)', letterSpacing: '-0.035em', lineHeight: 1.1 }}>

@@ -42,7 +42,7 @@ export default function Footer() {
             © {year} M. Luqman Akhtar. All rights reserved.
           </p>
           <p style={{ fontSize: '13px', color: 'rgba(247,246,241,0.3)', fontFamily: 'var(--f-serif)', fontStyle: 'italic' }}>
-            Designed with intention.
+            Designed and built with a lot of care.
           </p>
         </div>
       </div>

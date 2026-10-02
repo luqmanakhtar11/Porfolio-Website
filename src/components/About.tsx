@@ -2,9 +2,9 @@ import { useInView } from '../hooks/useInView';
 const aboutPhoto = 'https://res.cloudinary.com/pzdwfxph/image/upload/f_auto,q_auto/v1790889282/unnamed.jpg';
 
 const paras = [
-  "I started my design journey with a passion for visual communication — how images, type, and layout can convey meaning beyond words. That foundation in graphic design shaped the way I approach every digital product I work on.",
-  "Over 5+ years, I've grown into a multidisciplinary designer comfortable moving across product strategy, UX research, UI design, brand identity, and marketing collateral. I believe great design lives at the intersection of how something looks and how it actually works.",
-  "I'm driven by the idea that design should solve real problems while creating meaningful, memorable experiences. Whether designing an enterprise platform or a brand identity, I bring the same level of care to every pixel.",
+  "I started out in graphic design, obsessing over type, colour and layout. That's still how I see things: every screen is a composition first.",
+  "Over 5+ years that grew into product work: research, user flows, UI and design systems, alongside the brand and marketing work I never stopped loving. I care just as much about how something looks as whether it actually works.",
+  "Big enterprise platform or small brand refresh, it gets the same attention from me. The details are usually where the good stuff hides.",
 ];
 
 const stats = [
@@ -66,8 +66,8 @@ export default function About() {
               About me
             </p>
             <h2 className="font-bold" style={{ fontSize: 'clamp(30px, 4vw, 56px)', fontFamily: 'var(--f-sans)', color: 'var(--fg)', letterSpacing: '-0.035em', lineHeight: 1.05, marginBottom: '24px' }}>
-              Designing with purpose,{' '}
-              <span style={{ fontFamily: 'var(--f-serif)', fontStyle: 'italic', fontWeight: 400 }}>always.</span>
+              A graphic designer who{' '}
+              <span style={{ fontFamily: 'var(--f-serif)', fontStyle: 'italic', fontWeight: 400 }}>fell for UX.</span>
             </h2>
 
             <p style={{ fontSize: 'clamp(16px, 1.5vw, 19px)', fontWeight: 500, color: 'var(--fg)', fontFamily: 'var(--f-sans)', lineHeight: 1.6, marginBottom: '22px' }}>
