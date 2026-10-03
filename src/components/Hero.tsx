@@ -353,7 +353,7 @@ export default function Hero() {
         >
           <span className="hx-dot" />
           <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(247,246,241,0.85)', fontFamily: 'var(--f-sans)' }}>
-            {"Hi, I'm Luqman, a UI/UX & graphic designer"}
+            {"I'm Luqman, a UI/UX & graphic designer"}
           </span>
         </div>
 
