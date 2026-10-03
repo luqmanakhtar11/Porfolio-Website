@@ -11,7 +11,7 @@ import portraitSrc from '../imports/9869a790-96ba-464a-8397-1b925d67c518.png';
  */
 
 // ✏️ Words that rotate in the headline: "I design ___ people actually enjoy."
-const WORDS = ['apps', 'brands', 'websites', 'dashboards', 'logos'];
+const WORDS = ['apps', 'brands', 'websites', 'dashboards', 'Products'];
 
 const STATS = [
   { value: 5, suffix: '+', label: 'Years of experience' },
