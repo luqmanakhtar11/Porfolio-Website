@@ -161,7 +161,7 @@ export default function Work() {
         {/* Header row */}
         <div
           ref={ref}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10"
+          style={{ marginBottom: "36px" }}
         >
           <div>
             <p
@@ -201,103 +201,92 @@ export default function Work() {
             </h2>
           </div>
 
-          {/* Filters */}
-          <div
-            className={`reveal ${inView ? "v" : ""} flex flex-wrap gap-2`}
-            style={{ animationDelay: "0.18s" }}
-          >
-            {CATS.map((c) => (
-              <button
-                key={c}
-                onClick={() => selectCategory(c)}
-                style={{
-                  padding: "6px 16px",
-                  borderRadius: "100px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  fontFamily: "var(--f-mono)",
-                  letterSpacing: "0.05em",
-                  background: active === c ? "var(--fg)" : "transparent",
-                  color: active === c ? "var(--bg)" : "var(--muted)",
-                  border: `1px solid ${
-                    active === c ? "var(--fg)" : "var(--border)"
-                  }`,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                {c}
-                {!loading && (
-                  <span style={{ marginLeft: "8px", opacity: 0.55, fontWeight: 500 }}>{inCat(c).length}</span>
-                )}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Graphics & Marketing sub-filters */}
-        {showSubs && (
-          <div
-            key="subs"
-            className="work-subs"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              margin: "-12px 0 36px",
-              paddingTop: "18px",
-              borderTop: "1px dashed var(--border)",
-            }}
-          >
-            <style>{`
-              @keyframes workSubsIn { from { opacity: 0; transform: translateY(-8px) } to { opacity: 1; transform: none } }
-              .work-subs { animation: workSubsIn .35s var(--ease) both; }
-              .work-subs-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
-              .work-subs-row::-webkit-scrollbar { display: none; }
-              @media (min-width: 768px) { .work-subs-row { flex-wrap: wrap; overflow: visible; } }
-            `}</style>
-            <span
-              style={{
-                fontSize: "11px",
-                fontFamily: "var(--f-mono)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "var(--muted)",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              Type
-            </span>
-            <div className="work-subs-row">
-              {[{ name: "All", count: graphics.length }, ...subOptions].map((s) => {
-                const on = sub === s.name
-                return (
-                  <button
-                    key={s.name}
-                    onClick={() => selectSub(s.name)}
-                    style={{
-                      padding: "5px 14px",
-                      borderRadius: "100px",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      fontFamily: "var(--f-sans)",
-                      whiteSpace: "nowrap",
-                      background: on ? "var(--accent)" : "var(--accent-dim)",
-                      color: on ? "#fff" : "var(--fg)",
-                      border: `1px solid ${on ? "var(--accent)" : "transparent"}`,
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    {s.name === "All" ? "All graphics" : s.name}
-                    <span style={{ marginLeft: "6px", opacity: 0.6, fontWeight: 500 }}>{s.count}</span>
-                  </button>
-                )
-              })}
+        {/* Filter bar: main categories, then (for graphics) the type row right underneath */}
+        <div
+          className={`reveal ${inView ? "v" : ""}`}
+          style={{ animationDelay: "0.18s", marginBottom: "44px" }}
+        >
+          <style>{`
+            .wf-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+            .wf-seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 5px; border-radius: 999px;
+                      background: rgba(127,127,127,0.08); border: 1px solid var(--border); }
+            .wf-main { padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; font-family: var(--f-sans);
+                       letter-spacing: -0.005em; border: 0; cursor: pointer; transition: background-color .2s, color .2s; white-space: nowrap;
+                       background-color: transparent; color: var(--muted); }
+            .wf-main:hover { color: var(--fg); }
+            .wf-main.on { background-color: var(--accent); color: #fff; }
+            .wf-count { margin-left: 8px; font-weight: 500; opacity: .6; font-variant-numeric: tabular-nums; }
+            .wf-result { font-size: 13px; color: var(--muted); font-family: var(--f-sans); }
+            @media (max-width: 767px) {
+              .wf-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+              .wf-seg { display: flex; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+              .wf-seg::-webkit-scrollbar { display: none; }
+              .wf-main { flex-shrink: 0; padding: 9px 16px; }
+              .wf-result { padding-left: 6px; }
+              .wf-subs { flex-direction: column; align-items: stretch; gap: 8px; padding-left: 0; }
+              .wf-subs-label { align-self: flex-start; padding-left: 6px; }
+            }
+            @keyframes wfIn { from { opacity: 0; transform: translateY(-6px) } to { opacity: 1; transform: none } }
+            .wf-subs { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding-left: 6px; animation: wfIn .3s var(--ease) both; }
+            .wf-subs-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+            .wf-subs-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; min-width: 0; max-width: 100%; }
+            .wf-subs-row::-webkit-scrollbar { display: none; }
+            @media (min-width: 768px) { .wf-subs-row { flex-wrap: wrap; overflow: visible; } }
+            .wf-sub { padding: 7px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; font-family: var(--f-sans); white-space: nowrap;
+                      cursor: pointer; transition: all .2s; background-color: transparent; color: var(--fg2, var(--fg)); border: 1px solid var(--border); }
+            .wf-sub:hover { border-color: var(--accent); }
+            .wf-sub.on { background-color: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+          `}</style>
+
+          <div className="wf-bar">
+            <div className="wf-seg" role="tablist" aria-label="Project category">
+              {CATS.map((c) => (
+                <button
+                  key={c}
+                  role="tab"
+                  aria-selected={active === c}
+                  className={`wf-main${active === c ? " on" : ""}`}
+                  onClick={() => selectCategory(c)}
+                >
+                  {c}
+                  {!loading && <span className="wf-count">{inCat(c).length}</span>}
+                </button>
+              ))}
             </div>
+            {!loading && (
+              <span className="wf-result">
+                Showing {filtered.length} {filtered.length === 1 ? "project" : "projects"}
+              </span>
+            )}
           </div>
-        )}
+
+          {showSubs && (
+            <div className="wf-subs">
+              <span className="wf-subs-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 4v9a3 3 0 0 0 3 3h13" /><path d="M16 12l4 4-4 4" />
+                </svg>
+                Type
+              </span>
+              <div className="wf-subs-row" role="tablist" aria-label="Graphics type">
+                {[{ name: "All", count: graphics.length }, ...subOptions].map((sOpt) => (
+                  <button
+                    key={sOpt.name}
+                    role="tab"
+                    aria-selected={sub === sOpt.name}
+                    className={`wf-sub${sub === sOpt.name ? " on" : ""}`}
+                    onClick={() => selectSub(sOpt.name)}
+                  >
+                    {sOpt.name === "All" ? "All graphics" : sOpt.name}
+                    <span className="wf-count">{sOpt.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Project grid */}
         <div
