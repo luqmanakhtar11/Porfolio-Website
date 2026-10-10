@@ -2,13 +2,15 @@ export type Category = 'All' | 'UI/UX & Product Design' | 'Graphics & Marketing'
 
 /** Sub-categories available only when a project's category is "Graphics & Marketing". */
 export const GRAPHICS_SUBCATEGORIES = [
-  'Social Media Design',
   'Branding & Identity',
+  'Logo Design',
+  'Social Media Design',
+  'Email Design',
+  'Posters & Banners',
   'Pamphlets & Flyers',
+  'Print & Marketing Collateral',
   'Product Images & Packaging',
   'Thumbnail Design',
-  'Posters & Banners',
-  'Print & Marketing Collateral',
   'Presentation Design',
 ] as const;
 export type GraphicsSubcategory = (typeof GRAPHICS_SUBCATEGORIES)[number];

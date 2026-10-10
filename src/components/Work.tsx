@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
-import type { Category, Project } from "../data/projects"
+import { GRAPHICS_SUBCATEGORIES, type Category, type Project } from "../data/projects"
 import { useInView } from "../hooks/useInView"
 import { useProjects } from "../hooks/useProjects"
 import ProjectGalleryModal, { preloadGallery } from "./ProjectGalleryModal"
@@ -114,13 +114,22 @@ function ProjectCard({
 
 export default function Work() {
   const [active, setActive] = useState<Category>("All")
+  const [sub, setSub] = useState<string>("All")
   const [page, setPage] = useState(1)
   const [galleryProject, setGalleryProject] = useState<Project | null>(null)
   const { ref, inView } = useInView(0.08)
   const { projects, loading } = useProjects()
 
-  const filtered = projects.filter(
-    (p) => active === "All" || p.categories.includes(active),
+  const inCat = (c: Category) => projects.filter((p) => c === "All" || p.categories.includes(c))
+  const graphics = inCat("Graphics & Marketing")
+  // Sub-filters only list the types that actually have projects, so visitors never hit an empty page.
+  const subOptions = GRAPHICS_SUBCATEGORIES
+    .map((s) => ({ name: s, count: graphics.filter((p) => p.subCategory === s).length }))
+    .filter((s) => s.count > 0)
+  const showSubs = active === "Graphics & Marketing" && subOptions.length > 0
+
+  const filtered = inCat(active).filter(
+    (p) => !(active === "Graphics & Marketing" && sub !== "All") || p.subCategory === sub,
   )
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
@@ -129,6 +138,12 @@ export default function Work() {
 
   function selectCategory(c: Category) {
     setActive(c)
+    setSub("All")
+    setPage(1)
+  }
+
+  function selectSub(s: string) {
+    setSub(s)
     setPage(1)
   }
 
@@ -212,10 +227,77 @@ export default function Work() {
                 }}
               >
                 {c}
+                {!loading && (
+                  <span style={{ marginLeft: "8px", opacity: 0.55, fontWeight: 500 }}>{inCat(c).length}</span>
+                )}
               </button>
             ))}
           </div>
         </div>
+
+        {/* Graphics & Marketing sub-filters */}
+        {showSubs && (
+          <div
+            key="subs"
+            className="work-subs"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              margin: "-12px 0 36px",
+              paddingTop: "18px",
+              borderTop: "1px dashed var(--border)",
+            }}
+          >
+            <style>{`
+              @keyframes workSubsIn { from { opacity: 0; transform: translateY(-8px) } to { opacity: 1; transform: none } }
+              .work-subs { animation: workSubsIn .35s var(--ease) both; }
+              .work-subs-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+              .work-subs-row::-webkit-scrollbar { display: none; }
+              @media (min-width: 768px) { .work-subs-row { flex-wrap: wrap; overflow: visible; } }
+            `}</style>
+            <span
+              style={{
+                fontSize: "11px",
+                fontFamily: "var(--f-mono)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--muted)",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              Type
+            </span>
+            <div className="work-subs-row">
+              {[{ name: "All", count: graphics.length }, ...subOptions].map((s) => {
+                const on = sub === s.name
+                return (
+                  <button
+                    key={s.name}
+                    onClick={() => selectSub(s.name)}
+                    style={{
+                      padding: "5px 14px",
+                      borderRadius: "100px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      fontFamily: "var(--f-sans)",
+                      whiteSpace: "nowrap",
+                      background: on ? "var(--accent)" : "var(--accent-dim)",
+                      color: on ? "#fff" : "var(--fg)",
+                      border: `1px solid ${on ? "var(--accent)" : "transparent"}`,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {s.name === "All" ? "All graphics" : s.name}
+                    <span style={{ marginLeft: "6px", opacity: 0.6, fontWeight: 500 }}>{s.count}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Project grid */}
         <div
