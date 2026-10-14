@@ -251,15 +251,10 @@ export default function Work() {
                   onClick={() => selectCategory(c)}
                 >
                   {c}
-                  {!loading && <span className="wf-count">{inCat(c).length}</span>}
+                  {!loading && c === "All" && <span className="wf-count">{inCat(c).length}</span>}
                 </button>
               ))}
             </div>
-            {!loading && (
-              <span className="wf-result">
-                Showing {filtered.length} {filtered.length === 1 ? "project" : "projects"}
-              </span>
-            )}
           </div>
 
           {showSubs && (
@@ -280,7 +275,6 @@ export default function Work() {
                     onClick={() => selectSub(sOpt.name)}
                   >
                     {sOpt.name === "All" ? "All graphics" : sOpt.name}
-                    <span className="wf-count">{sOpt.count}</span>
                   </button>
                 ))}
               </div>
